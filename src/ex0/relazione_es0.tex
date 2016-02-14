@@ -20,6 +20,9 @@
 % along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
 %
 
+\makeatletter
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
 
 \documentclass[11pt, a4paper, oneside]{article}
 	\usepackage{setspace} % packets
@@ -29,13 +32,17 @@
 	\singlespacing % interlinea singolo
 	\title{Relazione esercitazione 1 Laboratorio di reti}
 	\author{Franco Masotti \and Danny Lessio}
-	\date{\today}
+	\date{March 9, 2015}
 \begin{document}
 	\maketitle
 	\tableofcontents
 	\listoffigures
 	\listoftables
 	\newpage
+    \footnotetext{networks-lab  Copyright (C) 2016  frnmst (Franco Masotti), 
+dannylessio (Danny Lessio).  This document comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it 
+under certain conditions; see LICENSE file for details.}
 	\part{Scelte di progetto}
 		\section{Scelte generali}
 			\par
@@ -60,7 +67,7 @@
 			\par
 			Il gruppo di continuit\'a (\texttt{UPS}) dell'\texttt{APC} garantisce alimentazione alle apparechiature di rete principali, per un periodo limitato di tempo anche sotto forte carico.
 				
-			\newpage
+	\newpage
 	\part{Planimetrie}
 		\section{Legenda}
 			\begin{figure}[H]
@@ -160,21 +167,4 @@
 		TOTALE (sconto 45 \%) = \textbf{82043.84 \euro{}}
 		
 	
-			%\par
-			%\texttt{users}
-			%\par
-			%\footnote{Per questioni di spazio riferirsi al codice sorgente per i commenti}:
-			%\begin{verbatim}
-%some writing here
-%// vedi do_tworker.h
-%struct thread_worker_struct // dati thread worker
-%{
-%  int csd_socket; // client socket descriptor
-%  users *head_usrs_list;
-%  td_c_p *td_mux_struct; // serve per comunicazione con thread dispatcher
-%  tw_log_c *tw_mux_struct; // scrittura su log file
-%};
-			%\end{verbatim}
-%'\texttt{\symbol{92}0}'.
-
 \end{document}
