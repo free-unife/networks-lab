@@ -312,14 +312,14 @@ ldapsearch -x -b 'dc=gruppo2,dc=labreti,dc=it' \
 				\texttt{/etc/openldap/slapd.conf}. Si tratta 
 				del file di configurazione del server. Le 
 				direttive aggiunte si trovano in coda al file.
-			\verbatiminput{/etc/openldap/slapd.conf}
+			\verbatiminput{../source/openldap_config/slapd.conf}
 			\newpage
 		\section{ldap.conf}
 			\par
 				File di configurazione del client posizionato 
 				in \texttt{/etc/openldap/ldap.conf}. Da notare 
 				la presenza di \texttt{TLS\_REQCERT     allow}
-			\verbatiminput{/etc/openldap/ldap.conf}
+			\verbatiminput{../source/openldap_config/ldap.conf}
 			\newpage
 		\section{domain.ldif}
 			\par
@@ -370,7 +370,7 @@ ldapsearch -x -b 'dc=gruppo2,dc=labreti,dc=it' \
 				Impostazioni di \texttt{systemd} per l'avvio di 
 				\texttt{slapd}. Da notare l'utilizzo esclusivo 
 				di \texttt{ldaps}.
-			\verbatiminput{/etc/systemd/system/slapd.service}
+			\verbatiminput{../source/openldap_config/slapd.service}
 			\newpage
 	
 %\footnote{Per questioni di spazio riferirsi al codice sorgente per i commenti}:

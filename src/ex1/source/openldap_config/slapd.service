@@ -1,5 +1,5 @@
 #
-# ldap.conf
+# slapd.service
 #
 # Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
 #                    dannylessio (Danny Lessio)
@@ -21,6 +21,14 @@
 #
 
 
-BASE		dc=gruppo2,dc=labreti,dc=it
-URI		ldap://localhost
-TLS_REQCERT	allow
+[Unit]
+Description=OpenLDAP server daemon
+
+
+[Install]
+WantedBy=multi-user.target
+
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/slapd -u ldap -g ldap -h "ldap:/// ldaps:///"
