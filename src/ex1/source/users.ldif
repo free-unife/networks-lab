@@ -1,0 +1,96 @@
+#
+# users.ldif
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+#
+# Users configuration file.
+#
+
+dn: cn=Franco Masotti,ou=PEOPLE,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+ou: PEOPLE
+mail: francomasotti@mail.gruppo2.labreti.it
+telephoneNumber: 0532000001
+uid: francomasotti
+cn: Franco Masotti
+sn: Masotti
+userPassword: {SSHA}/XindgLhd8FcrGDH9JZUP6i2cSzcVkZH
+uidNumber: 9000
+gidNumber: 8000
+homeDirectory: /home/francomasotti
+
+dn: cn=Danny Lessio,ou=PEOPLE,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+ou: PEOPLE
+mail: dannylessio@mail.gruppo2.labreti.it
+telephoneNumber: 0532000002
+uid: dannylessio
+cn: Danny Lessio
+sn: Lessio
+userPassword: {SSHA}auDobwU09otHQ+c/4mG2BEbMviJmfuF2
+uidNumber: 9001
+gidNumber: 8000
+homeDirectory: /home/dannylessio
+
+dn: cn=Jack Tripper,ou=PEOPLE,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+ou: PEOPLE
+mail: jacktripper@mail.gruppo2.labreti.it
+telephoneNumber: 0532000003
+uid: jacktripper
+cn: Jack Tripper
+sn: Tripper
+userPassword: {SSHA}Es/R5EMCsHqPC3BUiUvn6VHC4vktlylq
+uidNumber: 9002
+gidNumber: 8000
+homeDirectory: /home/jacktripper
+
+dn: cn=Janet Wood,ou=PEOPLE,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+ou: PEOPLE
+mail: janetwood@mail.gruppo2.labreti.it
+telephoneNumber: 0532000004
+uid: janetwood
+cn: Janet Wood
+sn: Wood
+userPassword: {SSHA}hHe/I9pmZ+m8DfYE0hclcMUwMnlUyTAB
+uidNumber: 9003
+gidNumber: 8000
+homeDirectory: /home/janetwood
+
+

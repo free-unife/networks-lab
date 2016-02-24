@@ -1,0 +1,379 @@
+%
+% relazione_es1.tex
+%
+% Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+%                    dannylessio (Danny Lessio)
+%
+% This file is part of networks-lab.
+%
+% networks-lab is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% networks-lab is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+%
+
+
+
+\makeatletter
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
+
+\documentclass[11pt, a4paper, oneside]{article}
+\usepackage{setspace} % packets
+\usepackage{verbatim} % include source files
+\singlespacing % interlinea singolo
+\title{Relazione esercitazione 2 Laboratorio di reti Openldap}
+\author{Franco Masotti \and Danny Lessio}
+\date{March 23, 2015}
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+    \footnotetext{networks-lab  Copyright (C) 2016  frnmst (Franco Masotti), 
+dannylessio (Danny Lessio).  This document comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it 
+under certain conditions; see LICENSE file for details.}
+	\part{Scelte di progetto}
+		\section{Ambiente di lavoro}
+			\par
+				\texttt{OpenLDAP} \'e presente nei repository 
+				di tutte principali distribuzioni 
+				\texttt{GNU/Linux}. Tuttavia abbiamo trovato 
+				particolarmente utile la documentazione 
+				presente sul wiki di \texttt{Arch Linux} in 
+				quanto esaustiva ma non dispersiva. Per questo 
+				motivo abbiamo provato \texttt{OpenLDAP} su 
+				sistemi derivati da questo. Si pu\'o trovare 
+				la wiki per l'installazione su:
+				\begin{verbatim}
+http://wiki.archlinux.org/index.php/OpenLDAP
+				\end{verbatim}
+				e la gestione degli utenti e dei gruppi su:
+				\begin{verbatim}
+http://wiki.archlinux.org/index.php/LDAP_authentication
+				\end{verbatim}
+		\section{Definizione del dominio e dell'utente amministratore}
+			\par
+				Per prima cosa abbiamo creato il nostro 
+				dominio che corrisponde alla radice 
+				dell'albero. Questo albero, chiamato anche
+				\texttt{DIT} (\texttt{Directory Information 
+				Tree}), contiene tutte le entry dei gruppi e
+				degli utenti, quindi \'e il nostro contenitore 
+				di informazioni.
+				Ogni elemento dell'albero ha una chiave
+				primaria che lo identifica. Questa viene
+				chiamata \texttt{DN} (cio\'e
+				\texttt{Distinguished Name}).
+				Il \texttt{DN} per 
+				la radice \'e \texttt{gruppo2.labreti.it} che
+				in notazione \texttt{LDIF} corrisponde a:
+				\begin{verbatim}
+dn: dc=gruppo2,dc=labreti,dc=it
+				\end{verbatim}
+			\par
+				Abbiamo poi creato l'utente amministratore 
+				chiamato \texttt{root} che ha \texttt{DN} 
+				uguale a:
+				\begin{verbatim}
+dn: cn=root,dn=gruppo2,dn=labreti,dn=it
+				\end{verbatim}
+				Attraverso l'attributo \texttt{roleOccupant}
+				stabiliamo il dominio su cui agisce, cio\'e 
+				\texttt{gruppo2.labreti.it}.
+		\section{Gruppi e utenti}
+			\par
+				Successvamente abbiamo creato quattro 
+				\texttt{OU} (\texttt{organizationalUnit}) che 
+				rappresentano i quattro gruppi in cui 
+				suddividere le entry aventi caratteristiche in 
+				comune:
+				\texttt{PEOPLE}, \texttt{GROUPS}, 
+				\texttt{HOST}, \texttt{DHCP}.
+				L'\texttt{OU} \texttt{PEOPLE} contiene 
+				inizialmente le entry di quattro persone, 
+				mentre le altre \texttt{OU} serviranno 
+				successivamente.
+			\par
+				Per generare le password degli utenti viene 
+				utilizzato il comando \texttt{slappasswd} che 
+				genera l'hash (con algoritmo \texttt{SSHA}, se 
+				non diversamente specificato) della password in input.
+				Successivamente le password criptate vengono 
+				copiate nel file \texttt{users.ldif} 
+				e applicate come valore dell' attributo 
+				\texttt{userPassword}, presente in ogni utente. 
+				Se \'e gi\'a presente un database, pu\'o 
+				essere usata un'entry
+				\texttt{add: userPassword} con 
+				\texttt{userPassword: <hashed user password>} 
+				nella riga successiva. Infine \'e necessario 
+				lanciare \texttt{ldapadd} oppure 
+				\texttt{ldapmodify} a seconda dei casi.
+			\par
+				Abbiamo scelto la password ed il numero di 
+				telefono come dati sensibili. Per definire chi 
+				e come possa leggere questi dati, bisogna 
+				aggiungere delle direttive in 
+				\texttt{slapd.conf}. In questo modo per leggere 
+				i dati sensibili \'e necessario autenticarsi 
+				con gli switch \texttt{-W} e \texttt{-D}, 
+				altrimenti, con \texttt{-x} e \texttt{-b} tali 
+				dati vengono semplicemente omessi.
+		\section{Script}
+			\par
+				Per automatizzare l'inizializzazione del
+				database, il suo reset e per effettuare
+				ricerche di prova abbiamo scritto alcuni script 
+				shell. Questo ci ha permesso di risparmiare 
+				parecchio tempo e di capire meglio il 
+				funzionamento del sistema \texttt{LDAP}.
+		\section{Object classes e schemas}
+			\par
+				Per scegliere gli attributi che ci 
+				interessano, questi vanno scelti solo da 
+				alcune object class. Infatti esistono tre tipi 
+				di object class:
+			\begin{itemize}
+				\item
+					\texttt{ABSTRACT}: classe \texttt{top} 
+					che identifica la fine di una gerarchia 
+					di classi. A questo tipo di classe, 
+					quindi, corrisponde solo la classe 
+					\texttt{top}.
+				\item
+					\texttt{AUXILIARY}: all'interno di 
+					ogni entry possiamo inserirne in 
+					numero arbitrario.
+				\item
+					\texttt{STRUCTURAL}: all'interno di 
+					ogni entry possiamo inserirne sono una 
+					che abbia come parent class (diretta) 
+					la classe \texttt{ABSTRACT} 
+					(cio\'e \texttt{top}), mentre è 
+					possibile inserirne altre in cascata 
+					che abbiano  come parent class una 
+					specifica classe. Ad esempio:
+					\begin{itemize}
+						\item
+							\texttt{inetOrgPerson}
+							dipende da:
+						\item
+							\texttt{organizationalPerson}
+							dipende da:
+						\item
+							\texttt{person} dipende 
+							da:
+						\item
+							\texttt{top}
+					\end{itemize}
+			\end{itemize}
+			\par
+				Gli attributi e le object class sono definite 
+				negli schemi (cio\'e nei file \texttt{.schema}
+				in \texttt{/etc/openldap/schema}).
+				Ogni object class pu\'o contenere pi\'u
+				attributi e ne definisce le propriet\'a, tra 
+				cui i vincoli \texttt{MUST} e \texttt{MAY}.
+				Ogni attributo pu\'o essere contenuto in pi\'u
+				object class.
+		\section{LDAPS}
+			\par
+				Abbiamo creato uno script per la generazione 
+				del certificato con \texttt{openssl}. In questo 
+				modo tutte le operazioni di copia dei 
+				certificati e di configurazione del server sono 
+				automatizzate grazie a \texttt{make\_cert.sh}.
+				Il \texttt{DN} da immettere \'e quello deciso 
+				all'inizio, cio\'e \texttt{gruppo2.labreti.it}.
+				Successivamente abbiamo usato due computer: uno 
+				con il server e l'altro con il client di
+				\texttt{openldap}. Prima di effettuare
+				la query abbiamo modificato il file
+				\texttt{/etc/openldap/ldap.conf} in modo che il 
+				client possa accettare il nostro 
+				certificato server che non \'e firmato da 
+				\texttt{CAs} (\texttt{Certification 
+				Authorities}). Abbiamo poi verificato la 
+				connessione con TLS/SSL con la seguente query:
+			\begin{verbatim}
+ldapsearch -x -b "dc=gruppo2,dc=labreti,dc=it" \
+	'(uid=*)'
+			\end{verbatim}
+				Questo ritorna tutti gli utenti presenti nel 
+				database sul server all'indirizzo specificato 
+				nella direttiva \texttt{URI} in 
+				\texttt{/etc/openldap/ldap.conf}
+			\par
+				Per eventuali problemi da parte del client con 
+				il certificato \'e sufficiente aggiungere una 
+				variabile d'ambiente subito prima di lanciare 
+				ldapsearch e/o specificare direttamente 
+				l'\texttt{URI} con lo switch \texttt{-H}, in 
+				questo modo:
+				\begin{verbatim}
+LDAPTLS_REQCERT=allow ldapsearch -H ldaps://192.168.0.2:636 -x -b \
+	"dc=gruppo2,dc=labreti,dc=it" '(uid=*)'
+				\end{verbatim}
+			\par
+				\'E inoltre possibile aggiungere lo switch
+				\texttt{-d1} per vedere lo scambio di chiavi.
+			\par
+				Lanciando i comandi di ricerca con lo switch 
+				\texttt{-Z}, per abilitare il \texttt{TLS}, 
+				otteniamo un errore:
+				\begin{verbatim}
+ldap_start_tls: Operations error (1)
+	additional info: TLS already started
+				\end{verbatim}
+				Tuttavia nelle impostazioni del client abbiamo 
+				usato un \texttt{URI} con \texttt{ldaps} e con 
+				la porta \texttt{636}. In questo modo il 
+				servizio \texttt{TLS} \'e gi\'a definito. 
+				Quindi 
+				lo switch 
+				\texttt{-Z} risulta ridondante perch\'e tenta 
+				la duplice esecuzione di \texttt{TLS} e per 
+				questo il programma avvisa dell'errore. Lo 
+				switch, quindi, non va utilizzato.
+			\newpage
+	\part{Query di ricerca}
+			\par
+				\'E possibile effettuare le query di ricerca
+				sia in locale sia in rete. Nel secondo caso \'e 
+				sufficiente aggiungere lo switch \texttt{-H}
+				che identifica il protocollo (\texttt{LDAPS}) e 
+				l'host name o l'indirizzo ip del server.
+				Ad esempio per effettuare una ricerca di 
+				un'utente via rete \'e sufficiente installare 
+				il pacchetto \texttt{openldap} su un secondo pc 
+				che funger\'a da client. Successivamente si 
+				aggiunge una riga al per l'accettazione del 
+				certificato nel file di configurazione del 
+				client. Infine si effettua la ricerca vera e 
+				propria identificando la radice dell'albero 
+				\texttt{DIT} come base di ricerca:
+				\begin{verbatim}
+sudo pacman -Sy openldap
+sudo echo -e -n "TLS_REQCERT\tallow\n" >> /etc/openldap/ldap.conf
+ldapsearch -H ldaps://192.168.0.2:636 -x '(uid=jacktripper)' -b \
+	"dc=gruppo2,dc=labreti,dc=it"
+				\end{verbatim}
+				\begin{itemize}
+					\item
+						\texttt{-H} identifica il
+						protocollo,  il server e la 
+						porta di ascolto remota.
+					\item
+						\texttt{-x} significa di 
+						utilizzare il metodo semplice 
+						di autenticazione (anonimo).
+					\item
+						\texttt{-b} identifica la base 
+						da cui incominciare la 
+						ricerca.
+				\end{itemize}
+			\par
+				Possiamo specificare i search pattern in questo 
+				modo:
+				\begin{verbatim}
+ldapsearch -x '(|(uid=jacktripper)(cn~=Danny))'
+				\end{verbatim}
+				dove 
+				\texttt{|} \'e l'operatore \texttt{OR}. In 
+				questo modo vengono selezionati le entry aventi 
+				\texttt{uid=jacktripper} con le entry aventi 
+				\texttt{cn\~=Danny} cio\'e \texttt{cn} simile a 
+				\texttt{Danny}. Gli operatori logici vengono 
+				quindi messi per primi rispetto rispetto alle 
+				coppie variabili valore.
+			\par
+				Con la seguente query otteniamo tutti gli 
+				oggetti appartenenti all'\texttt{OU} people con 
+				quelli apparteneti all'object class 
+				\texttt{organizationalPerson}.
+				\begin{verbatim}
+ldapsearch -x -b 'dc=gruppo2,dc=labreti,dc=it' \
+	'(&(ou=PEOPLE)(objectClass=organizationalPerson))'
+				\end{verbatim}				
+			\newpage
+	\part{Listati}
+		\section{slapd.conf}
+			\par
+				Questo file va posizionato in 
+				\texttt{/etc/openldap/slapd.conf}. Si tratta 
+				del file di configurazione del server. Le 
+				direttive aggiunte si trovano in coda al file.
+			\verbatiminput{/etc/openldap/slapd.conf}
+			\newpage
+		\section{ldap.conf}
+			\par
+				File di configurazione del client posizionato 
+				in \texttt{/etc/openldap/ldap.conf}. Da notare 
+				la presenza di \texttt{TLS\_REQCERT     allow}
+			\verbatiminput{/etc/openldap/ldap.conf}
+			\newpage
+		\section{domain.ldif}
+			\par
+				Questo file \'e usato per la creazione del
+				dominio e dei gruppi.
+			\verbatiminput{../source/domain.ldif}
+			\newpage
+		\section{users.ldif}
+			\par
+				File usato per la creazione degli utenti.
+			\verbatiminput{../source/users.ldif}
+			\newpage
+		\section{search\_examples.sh}
+			\par
+				Script per effettuare alcune query di ricerca.
+			\verbatiminput{../source/search_examples.sh}
+			\newpage
+		\section{commands.sh}
+			\par
+				Script che chiama gli altri script per la 
+				creazione del certificato, l'inizializzazione 
+				con i dati di esempio e le query di esempio.
+			\verbatiminput{../source/commands.sh}
+			\newpage
+		\section{make\_cert.sh}
+			\par
+				Script per la creazione  del certificato.
+				L'amministratore si deve curare di fornire i
+				dati corretti, sopratattutto il \texttt{DN},
+				altrimenti l'autenticazione fallisce.
+			\verbatiminput{../source/make_cert.sh}
+			\newpage
+		\section{restore\_config.sh}
+			\par
+				Script per il rispristino e la creazione della 
+				configurazione iniziale (reset) del database.
+			\verbatiminput{../source/restore_config.sh}
+			\newpage
+		\section{add\_example\_entries.sh}
+			\par
+				Script per l'aggiunta dei dati di esempio nel 
+				database \texttt{LDAP} sfruttando 
+				\texttt{domain.ldif} e \texttt{users.ldif}.
+			\verbatiminput{../source/add_example_entries.sh}
+			\newpage
+		\section{slapd.service}
+			\par
+				Impostazioni di \texttt{systemd} per l'avvio di 
+				\texttt{slapd}. Da notare l'utilizzo esclusivo 
+				di \texttt{ldaps}.
+			\verbatiminput{/etc/systemd/system/slapd.service}
+			\newpage
+	
+%\footnote{Per questioni di spazio riferirsi al codice sorgente per i commenti}:
+%'\texttt{\symbol{92}0}'.
+
+\end{document}

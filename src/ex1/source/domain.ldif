@@ -1,0 +1,61 @@
+#
+# domain.ldif
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+#
+# Domain configuration file.
+#
+
+# gruppo2.labreti.it
+dn: dc=gruppo2,dc=labreti,dc=it
+dc: gruppo2
+o: UNIFE
+objectClass: dcObject
+objectClass: organization
+
+# root, gruppo2.labreti.it
+dn: cn=root,dc=gruppo2,dc=labreti,dc=it
+cn: root
+description: LDAP administrator
+objectClass: organizationalRole
+objectClass: top
+roleOccupant: dc=gruppo2,dc=labreti,dc=it
+
+# PEOPLE, gruppo2.labreti.it
+dn: ou=PEOPLE,dc=gruppo2,dc=labreti,dc=it
+ou: PEOPLE
+objectClass: organizationalUnit
+
+# GROUPS, gruppo2.labreti.it
+dn: ou=GROUPS,dc=gruppo2,dc=labreti,dc=it
+ou: GROUPS
+objectClass: organizationalUnit
+
+# HOST, gruppo2.labreti.it
+dn: ou=HOST,dc=gruppo2,dc=labreti,dc=it
+ou: HOST
+objectClass: organizationalUnit
+
+# DHCP, gruppo2.labreti.it
+dn: ou=DHCP,dc=gruppo2,dc=labreti,dc=it
+ou: DHCP
+objectClass: organizationalUnit
