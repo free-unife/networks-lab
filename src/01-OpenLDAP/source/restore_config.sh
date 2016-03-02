@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# restore_config.conf
+# restore_config.sh
 #
 # Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
 #                    dannylessio (Danny Lessio)

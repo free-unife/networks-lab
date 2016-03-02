@@ -1,0 +1,37 @@
+;
+; 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa.
+;
+; Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+;                    dannylessio (Danny Lessio)
+;
+; This file is part of networks-lab.
+;
+; networks-lab is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+;
+; networks-lab is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+;
+
+
+$ORIGIN 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa.
+$TTL 2d
+@	IN	SOA	ns.gruppo2.labreti.it.	root.gruppo2.labreti.it. (
+2015040901	; serial
+3h	; refresh
+1h	; retry
+1w	; expiry
+1d )	; minimum
+0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa.	IN	NS	ns.gruppo2.labreti.it.
+1.0.0.0	IN	PTR	ns.gruppo2.labreti.it.
+0.1.0.0	IN	PTR	vaio.gruppo2.labreti.it.
+0.2.0.0	IN	PTR	lenovo.gruppo2.labreti.it.
+0.3.0.0	IN	PTR	asus.gruppo2.labreti.it.
+0.4.0.0	IN	PTR	acer.gruppo2.labreti.it.

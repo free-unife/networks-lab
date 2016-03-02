@@ -1,0 +1,41 @@
+;
+; gruppo2.labreti.it
+;
+; Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+;                    dannylessio (Danny Lessio)
+;
+; This file is part of networks-lab.
+;
+; networks-lab is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+;
+; networks-lab is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+;
+
+
+$TTL 2d
+@	IN	SOA	ns.gruppo2.labreti.it.	root.gruppo2.labreti.it. (
+2015040901	; serial
+3h	; refresh
+1h	; retry
+1w	; expiry
+1d )	; minimum
+@	IN	NS	ns.gruppo2.labreti.it.
+ns.gruppo2.labreti.it.	IN	AAAA	2002:0000:0000:0000:0000:0000:0000:0001
+ns.gruppo2.labreti.it.	IN	A	192.168.2.1
+vaio.gruppo2.labreti.it.	IN	A	192.168.2.10
+vaio.gruppo2.labreti.it.	IN	AAAA	2002:0000:0000:0000:0000:0000:0000:0010
+lenovo.gruppo2.labreti.it.	IN	A	192.168.2.20
+lenovo.gruppo2.labreti.it.	IN	AAAA	2002:0000:0000:0000:0000:0000:0000:0020
+asus.gruppo2.labreti.it.	IN	A	192.168.2.30
+asus.gruppo2.labreti.it.	IN	AAAA	2002:0000:0000:0000:0000:0000:0000:0030
+acer.gruppo2.labreti.it.	IN	A	192.168.2.40
+acer.gruppo2.labreti.it.	IN	AAAA	2002:0000:0000:0000:0000:0000:0000:0040

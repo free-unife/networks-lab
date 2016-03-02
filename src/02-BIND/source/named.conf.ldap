@@ -1,0 +1,50 @@
+/*
+ * named.conf.ldap
+ *
+ * Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+ *                    dannylessio (Danny Lessio)
+ *
+ * This file is part of networks-lab.
+ *
+ * networks-lab is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * networks-lab is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
+options {
+	directory "/var/named";
+	listen-on port 53 { any; };
+	listen-on-v6 port 53 { any; };
+	listen-on port 53 { 192.168.2.1; 2002:0000:0000:0000:0000:0000:0000:0001; };
+	allow-recursion { 192.168.2.0/24; 192.168.2.1; 2002:0000:0000:0000:0000:0000:0000:0000/64; 2002:0000:0000:0000:0000:0000:0000:0001;};
+};
+
+zone "gruppo2.labreti.it" IN {
+	type master;
+	database "ldap ldap://192.168.2.1/zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it 86400";
+	allow-query { any; };
+};
+
+zone "2.168.192.in-addr.arpa" IN {
+	type master;
+	database "ldap ldap://192.168.2.1/zoneName=2.168.192.in-addr.arpa,ou=HOST,dc=gruppo2,dc=labreti,dc=it 86400";
+	allow-query { any; };
+};
+
+zone "0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa" IN {
+	type master;
+	database "ldap ldap://192.168.2.1/zoneName=0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa,ou=HOST,dc=gruppo2,dc=labreti,dc=it 86400";
+	allow-query { any; };
+};
+

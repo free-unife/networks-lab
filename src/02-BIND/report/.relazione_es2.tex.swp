@@ -1,0 +1,927 @@
+\documentclass[9pt, a4paper, oneside]{article}
+\usepackage[a4paper]{geometry}
+\usepackage{setspace} % packets
+%\usepackage{verbatim} % include source files
+\usepackage{amsmath} %powers
+\usepackage{listings}
+\singlespacing % interlinea singolo
+\title{Relazione esercitazione 3 Laboratorio di reti\newline Server DNS con BIND e backend con OpenLDAP}
+\author{Franco Masotti \and Danny Lessio}
+\date{\today}
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+	\part{Configurazione ed installazione del server DNS}
+		\section{Ambiente di lavoro}
+			\par
+				Per la realizzazione di questo progetto ci 
+				siamo basati su repository di
+				\texttt{Arch Linux}, nei quali abbiamo 
+				trovato i due pacchetti fondamentali per 
+				implementare ed interrogare correttamente il 
+				server DNS:
+				\begin{itemize}
+				\item
+					Il pacchetto \texttt{bind}, ci fornisce 
+					un server DNS configurabile (grazie 
+					all'eseguibile \texttt{named}).
+				 \item
+					\texttt{dnsutils} ci fornisce un set 
+					di comandi per poter interrogare il 
+					server, come il comando 
+					\texttt{dig} ed il comando 
+					\texttt{host}.
+				\end{itemize}
+				Per l'installazione dei pacchetti \'e quindi 
+				sufficiente fare:
+				\begin{verbatim}
+sudo pacman -Sy dnsutils bind
+				\end{verbatim}
+				Per maggiori informazioni riguardo il 
+				funzionamento di entrambi ci siamo basati sia 
+				sulla guida ufficiale
+				\footnote{http://www.isc.org/software/bind/}
+				, sia su altre guide come (soprattutto) quella
+				di \texttt{Gentoo Linux}
+				\footnote{https://wiki.gentoo.org/wiki/BIND/Tutorial}
+				. Per quanto riguarda configurazioni del client 
+				ci siamo basati sul wiki \texttt{Arch Linux}
+				\footnote{https://wiki.archlinux.org/index.php/BIND}
+				.
+		\section{Definizione delle sottoreti e degli indirizzi IP}
+			\par
+				Abbiamo definito la struttura della nostra rete 
+				in questo modo:
+				\begin{itemize}
+					\item
+						Indirizzamento IPv4
+						\begin{itemize}
+							\item
+								La nostra 
+								sottorete \'e 
+								\texttt{192.168.2.0/24}.
+								Questo 
+								significa che 
+								abbiamo 
+								$2^{(32-24)}
+								= 256 $
+								indirizzi per 
+								gli 
+								host
+							\item
+								Considerando 
+								che non \'e 
+								possibile 
+								utilizzare gli 
+								indirizzi che 
+								terminano con 
+								\texttt{0}
+								e \texttt{255} 
+								(perch\'e 
+								\texttt{192.168.2.0}
+								rappresenta la 
+								sottorete 
+								mentre 
+								\texttt{192.168.0.255}
+								rappresenta 
+								l'indirizzo di 
+								broadcast) 
+								rimangono a 
+								disposizione 
+								254 indirizzi 
+								realmente 
+								utilizzabili 
+								per gli host.
+							\item
+								Come indirizzo 
+								del server DNS, 
+								per comodit\'a 
+								abbiamo scelto 
+								\texttt{192.168.2.1}
+								in quanto primo 
+								indirizzo 
+								disponibile.
+						\end{itemize}
+					\item
+						Indirizzamento IPv6
+						\begin{itemize}
+							\item
+								Quasi tutti i 
+								concetti
+								espressi per 
+								l'IPv4 possono 
+								essere usati 
+								per l'IPv6.
+								Tuttavia IPv6 
+								non ha il 
+								concetto di 
+								indirizzo di
+								broadcast.
+							\item
+								La nostra 
+								sottorete IPv6 
+								\'e 
+								\texttt{2002::/64}
+								, quindi 
+								abbiamo a 
+								disposizione circa 
+								$2^{(128-64)} 
+								= 2^{64}$
+								indirizzi, 
+								escludendo 
+								\texttt{2002::0}
+								che identifica 
+								la sottorete.
+							\item
+								L'indirizzo del 
+								server DNS \'e, 
+								sullo stesso 
+								concetto 
+								dell'IPv4,
+								\texttt{2002::1}.
+						\end{itemize}
+				\end{itemize}
+		\section{Definizione delle zone}
+			\par
+				Per effettuare correttamente tutte le ricerce 
+				DNS abbiamo definito tre zone: una di 
+				indirizzamento diretto e due di indirizzamento 
+				inverso. Le zone dicono sia come tradurre da 
+				un host name ad un indirizzo IP (e viceversa), 
+				sia quali informazioni autoritative dare (ad 
+				esempio qual \'e il nome del server dns, 
+				server mail, informazioni testuali, ecc...) 
+				oltre che informare sui vari tempi in cui 
+				scadono le richieste. Le nostre tre zone sono:
+				\begin{itemize}
+					\item
+						\texttt{gruppo2.labreti.it}
+						\begin{itemize}
+							\item
+								Questa \'e la 
+								zona diretta, 
+								cio\'e quella 
+								che serve a 
+								tradurre da 
+								hostname ad 
+								indirizzo IPv4 
+								ed IPv6. Ogni 
+								host infatti 
+								ha due entry.
+								Ogni entry ha 
+								una serie di 
+								atributi. Nel 
+								nostro caso i 
+								pi\'u 
+								importanti sono 
+								il campo 
+								\texttt{name} 
+								che identifica 
+								un'host (o 
+								atri oggetti) 
+								ed il campo
+								\texttt{type} 
+								che ci dice se 
+								si tratta di un 
+								host (tipo 
+								\texttt{IN} 
+								cio\'e 
+								\texttt{\textbf{IN}ternet}
+								), oppure di un 
+								name server 
+								(tipo 
+								\texttt{NS}).
+								Il campo 
+								\texttt{class}
+								invece ci 
+								definisce se 
+								si tratta di un 
+								indirizzo IPv4 
+								(classe 
+								\texttt{A}) 
+								oppure IPv6 
+								(classe 
+								\texttt{AAAA}).
+							\item
+								Il server DNS 
+								ha quindi due 
+								entry: una di 
+								tipo 
+								\texttt{NS} 
+								e l'altra di 
+								tipo 
+								\texttt{IN}. 
+						\end{itemize}
+					\item
+						\texttt{2.168.192.in-addr.arpa}
+						\begin{itemize}
+							\item
+								Questa \'e la 
+								zona inversa 
+								IPv4. Ha lo 
+								scopo di 
+								tradurre un 
+								indirizzo IPv4 
+								nel 
+								corrispondente 
+								host name. Da 
+								notare l'uso 
+								della classe 
+								\texttt{PTR} 
+								cio\'e 
+								\texttt{PoinTeR}
+								in cui la 
+								parte host 
+								degli indirizi 
+								\emph{punta} ad 
+								un nome di 
+								machhina.
+						\end{itemize}
+					\item
+						\texttt{0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa}
+						\begin{itemize}
+							\item
+								Questa \'e la 
+								zona inversa 
+								IPv6, cio\'e  
+								traduce gli 
+								indirizzi IPv6
+								nei  
+								corrispondenti
+								host names.
+								\'E 
+								concettualmente 
+								uguale alla 
+								precedente.
+						\end{itemize}
+				\end{itemize}
+		\section{Definizione degli host}
+			\par
+				Abbiamo definito quattro host di esempio ed il 
+				name server stesso (\texttt{ns}) per testare il 
+				corretto funzionamento del server DNS. Abbiamo associato i 					seguenti indirizzi IP 
+				alle relative macchine:
+		                \begin{table}[h]
+					\begin{center}
+                        			\begin{tabular}{cccc}
+                                			\hline
+			                                \multicolumn{3}{c}{\textbf{Hosts}} \\
+                        			        \cline{1-3}
+Host name & Indirizzo IPv4 & Indirizzo IPv6 \\ \hline
+ns	&192.168.2.1&	2002::1\\
+vaio	&192.168.2.10&	2002::10\\
+lenovo	&192.168.2.20&	2002::20\\
+asus	&192.168.2.30	&2002::30\\
+acer	&192.168.2.40&2002::40\\
+\hline
+			                        \end{tabular}
+					\end{center}
+                		\end{table}
+		\section{Test del server DNS - Queries}
+			\par
+				A questo punto possiamo avviare lo script 
+				\texttt{setup\_dns.sh} in modo che crei i file 
+				di zona, come indicato nei listati.
+			\par
+				Di seguito mostriamo l'esecuzione del comando 
+				\texttt{dig} per verificare il corretto 
+				funzionamento. I primi esempi mostrano una 
+				risoluzione diretta (IPv4 ed IPv6) grazie alla 
+				zona \texttt{gruppo2.labreti.it}, mentre gli  
+				ultimi mostrano la risoluzione inversa 
+				rispettivamente con la zona IPv4 
+				\texttt{2.168.192.in-addr.arpa} e con quella 
+				IPv6 
+				\texttt{0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa}.
+			\par
+				In entrambi i casi eseguiremo prima un 
+				semplice comando \texttt{dig}, poi 
+				useremo l'opzione \texttt{+short} che permette 
+				di stampare a video solamente il corpo della 
+				sezione \texttt{ANSWER SECTION}. 
+				Successivamente lo switch \texttt{+short} 
+				sar\'a abilitato per evitare ridondanze.
+				\begin{itemize}
+					\item
+						Esempi con risoluzione diretta
+						\begin{itemize}
+							\item
+								\texttt{dig ns.gruppo2.labreti.it} , 
+								in questo modo 
+								otteniamo la 
+								risoluzione 
+								IPv4 del nome 
+								associato 
+								al server DNS 
+								(il comando 
+								\texttt{dig}, 
+								se non 
+								specificato 
+								diversamente, 
+								effettua 
+								solamente la 
+								risoluzione 
+								IPv4 di default):
+								\begin{verbatim}
+; <<>> DiG 9.9.7 <<>> ns.gruppo2.labreti.it
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 54163
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 2
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;ns.gruppo2.labreti.it.		IN	A
+
+;; ANSWER SECTION:
+ns.gruppo2.labreti.it.	172800	IN	A	192.168.2.1
+
+;; AUTHORITY SECTION:
+gruppo2.labreti.it.	172800	IN	NS	ns.gruppo2.labreti.it.
+
+;; ADDITIONAL SECTION:
+ns.gruppo2.labreti.it.	172800	IN	AAAA	2002::1
+
+;; Query time: 0 msec
+;; SERVER: 192.168.2.1#53(192.168.2.1)
+;; WHEN: Wed Apr 08 14:22:02 CEST 2015
+;; MSG SIZE  rcvd: 108
+								\end{verbatim}
+							\item
+								\texttt{dig ns.gruppo2.labreti.it AAAA} , 
+								Attraverso lo 
+								switch 
+								\texttt{AAAA} 
+								otteniamo la 
+								risoluzione 
+								IPv6 del nome 
+				 				associato al 
+				 				server DNS:
+								\begin{verbatim}
+; <<>> DiG 9.9.7 <<>> ns.gruppo2.labreti.it AAAA
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 54852
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 2
+
+;; OPT PSEUDOSECTION:
+;; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;ns.gruppo2.labreti.it.		IN	AAAA
+
+;; ANSWER SECTION:
+ns.gruppo2.labreti.it.	172800	IN	AAAA	2002::1
+
+;; AUTHORITY SECTION:
+gruppo2.labreti.it.	172800	IN	NS	ns.gruppo2.labreti.it.
+
+;; ADDITIONAL SECTION:
+ns.gruppo2.labreti.it.	172800	IN	A	192.168.2.1
+
+;; Query time: 0 msec
+;; SERVER: 192.168.2.1#53(192.168.2.1)
+;; WHEN: Wed Apr 08 14:58:07 CEST 2015
+;; MSG SIZE  rcvd: 108
+								\end{verbatim}
+							\item
+								\texttt{dig asus.gruppo2.labreti.it +short} , 
+								in questo modo 
+								otteniamo la 
+								risoluzione 
+								IPv4 dell'host 
+								\texttt{asus}, 
+								da notare 
+								l'utilizzo 
+								dello switch 
+							 	\texttt{+short} 
+							 	descritto 
+							 	all'inizio 
+							 	del paragrafo:
+								\begin{verbatim}
+192.168.2.30
+								\end{verbatim}
+							\item
+								\texttt{dig asus.gruppo2.labreti.it AAAA +short} ,
+								in questo modo 
+								otteniamo la 
+								risoluzione 
+								IPv6 dell'host 
+								\texttt{asus}:
+								\begin{verbatim}
+2002::30		
+								\end{verbatim}
+							\item
+								\texttt{dig lenovo.gruppo2.labreti.it +short} , 
+								\begin{verbatim}
+192.168.2.20
+								\end{verbatim}
+							\item
+								\texttt{dig lenovo.gruppo2.labreti.it AAAA +short} , 
+								\begin{verbatim}
+2002::20
+								\end{verbatim}
+						\end{itemize}
+					\item
+						Esempi con risoluzione inversa 
+						in IPv4
+						\begin{itemize}
+							\item
+								\texttt{dig -x 192.168.2.20} , 
+								in questo modo 
+								otteniamo la 
+								risoluzione 
+								inversa del 
+								nome host
+								associato a 
+								questo 
+								indirizzo IPv4.
+								Il nome 
+								restituito \'e
+								\texttt{lenovo}:
+								\begin{verbatim}
+; <<>> DiG 9.9.7 <<>> -x 192.168.2.20
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42862
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 3
+
+;; OPT PSEUDOSECTION:
+;; EDNS: version: 0, flags:; udp: 4096
+
+;; QUESTION SECTION:
+;20.2.168.192.in-addr.arpa.	IN	PTR
+
+;; ANSWER SECTION:
+20.2.168.192.in-addr.arpa. 172800 IN	PTR	lenovo.gruppo2.labreti.it.
+
+;; AUTHORITY SECTION:
+2.168.192.in-addr.arpa.	172800	IN	NS	ns.gruppo2.labreti.it.
+
+;; ADDITIONAL SECTION:
+ns.gruppo2.labreti.it.	172800	IN	A	192.168.2.1
+ns.gruppo2.labreti.it.	172800	IN	AAAA	2002::1
+
+;; Query time: 0 msec
+;; SERVER: 192.168.2.1#53(192.168.2.1)
+;; WHEN: Wed Apr 08 14:47:04 CEST 2015
+;; MSG SIZE  rcvd: 154
+
+								\end{verbatim}
+							\item
+								\texttt{dig -x 192.168.2.10 +short} , 
+								\begin{verbatim}
+vaio.gruppo2.labreti.it.
+								\end{verbatim}
+							\item
+								\texttt{dig -x 192.168.2.40 +short} , 
+								\begin{verbatim}
+acer.gruppo2.labreti.it.
+								\end{verbatim}
+						\end{itemize}
+					\item
+						Esempi di risoluzione 
+						inversa in IPv6
+						\begin{itemize}
+							\item
+								\texttt{dig -x 2002::1} , 
+								otteniamo la 
+								risoluzione 
+								inversa di 
+								questo 
+								indirizzo  
+								IPv6, 
+								corrispondente 
+								al name server 
+								DNS, cio\'e
+								\texttt{ns.gruppo2.labreti.it}
+								\begin{verbatim}
+; <<>> DiG 9.9.7 <<>> -x 2002::1
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 923
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 3
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+
+;; QUESTION SECTION:
+;1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa. IN PTR
+
+;; ANSWER SECTION:
+1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa. 172800 
+IN PTR	ns.gruppo2.labreti.it.
+
+;; AUTHORITY SECTION:
+0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa. 172800 
+IN NS ns.gruppo2.labreti.it.
+
+;; ADDITIONAL SECTION:
+ns.gruppo2.labreti.it.	172800	IN	A	192.168.2.1
+ns.gruppo2.labreti.it.	172800	IN	AAAA	2002::1
+
+;; Query time: 0 msec
+;; SERVER: 192.168.2.1#53(192.168.2.1)
+;; WHEN: Wed Apr 08 15:25:31 CEST 2015
+;; MSG SIZE  rcvd: 194
+
+								\end{verbatim}
+							\item
+								\texttt{dig -x 2002::10 +short} , 
+								in questo modo 
+								otteniamo la 
+								risoluzione 
+								inversa del 
+								nome associato 
+								a questo 
+								indirizzo 
+								IPv6, infatti 
+								ci viene 
+								restituito il 
+								nome dell'host 
+								associato 
+								cio\'e
+								\texttt{vaio}:
+								\begin{verbatim}
+vaio.gruppo2.labreti.it.
+								\end{verbatim}
+							\item
+								\texttt{dig -x 2002::30 +short} , 
+								\begin{verbatim}
+asus.gruppo2.labreti.it.	
+								\end{verbatim}
+						\end{itemize}
+				\end{itemize}
+		\section{File di configurazione}
+			\par			
+				Abbiamo creato un file di 
+				configurazione chiamato \texttt{domain.conf} in 
+				cui andiamo a definire tutte le variabili 
+				necessarie per il funzionamento del server 
+				\texttt{DNS}. Qui abbiamo definito il nostro 
+				dominio (\texttt{gruppo2.labreti.it}), le 
+				informazioni IPv4 ed IPv6 della nostra rete e 
+				tutti gli host. In questo modo \'e possibile 
+				definire nuovi computer semplicemente cambiando 
+				alcuni array.
+		\section{Script}
+			\par
+				Lo script \texttt{setup\_dns.sh} ci consente di 
+				caricare automaticamante i dati contenuti in 
+				\texttt{domain.conf} e di creare 
+				automaticamente le tre zone (sia sotto 
+				forma di zone-file sia come file 
+				\texttt{ldif} da usare con LDAP). Viene anche 
+				creato il file di configurazione di 
+				\texttt{named}. Il funzionamento dettagliato 
+				con le varie opzioni \'e rimandato alla parte 
+				dei listati.
+			\par
+				Gli altri script vengono chiamati direttamente 
+				da \texttt{setup\_dns.sh} a seconda delle 
+				operazioni indicate dall'utente.
+		\newpage
+	\part{LDAP Backend}
+		\section{Ambiente di lavoro}
+			\par
+				Grazie ad LDAP \'e possibile salvare le 
+				informazioni riguardanti le zone e gli host in 
+				modo che \texttt{named} possa collegarsi 
+				direttamente.
+				Utilizzando LDAP \'e pi\'u semplice fare 
+				manutenzione e gestire gli host soprattutto 
+				quando sono in quantit\'a elevata.
+			\par
+				Per effettuare il collegamento del nostro 
+				server DNS al database LDAP siamo ricorsi al 
+				pacchetto\footnote{http://www.bind9-ldap.bayour.com/bind-sdb-ldap-1.0.tar.gz} 
+				\texttt{bind-sdb}. Questo 
+				permette di inserire all'interno di 
+				\texttt{named.conf} una entry, per ogni 
+				zona, contenente l'URI LDAP corrispondente.
+		\section{Installazione}
+			\par
+				Utilizzando \texttt{Arch Linux} il pacchetto 
+				\texttt{bind} non \'e precompilato per poter 
+				utilizzare il backend e non esiste il 
+				pacchetto \texttt{bind-sdb} (come su 
+				\texttt{CentOS}, \texttt{fedora}, ecc...). 
+				Siamo dunque stati costretti a scaricare il 
+				sorgente dal sito 
+				ufficiale\footnote{https://www.isc.org} 
+				la versione 
+				\texttt{9.9.7}\footnote{ftp://ftp.isc.org/isc/bind9/9.9.7/bind-9.9.7.tar.gz} 
+				ed a ricompilare l'intero pacchetto 
+				collegandogli manualmente l'estensione 
+				\texttt{bind-sdb}.
+			\par
+				\'E necessario inoltre scaricare lo schema 
+				\texttt{dnszone}\footnote{http://www.bind9-ldap.bayour.com/dnszone-schema.txt} 
+				da inserire nella cartella degli schemi di 
+				LDAP, senza dimenticarsi della direttiva 
+				\texttt{include} in \texttt{slapd.conf}. Con 
+				questo schema \'e possibile definire le zone 
+				e gli host, quindi risulta fondamentale.
+		\section{Configurazione}
+			\par
+				Una volta verificata la corretta compilazione, 
+				abbiamo lanciato lo script 
+				\texttt{setup\_dns.sh} che genera e carica nel 
+				database LDAP i file \texttt{ldif} necessari 
+				per le interrogazioni DNS. Questi file 
+				sfruttano lo schema del punto precedente
+				il quale definisce object class ed attributi per 
+				il nostro scopo (ad esempio vengono forniti 
+				gli attributi \texttt{A} ed \texttt{AAAA} 
+				necessari per l'inserimento di campi IPv4 ed 
+				IPv6 rispettivamente).
+			\newpage
+		\section{Albero LDAP}
+			\par
+				Questa \'e la struttura di una parte 
+				dell'albero LDAP dopo aver lanciato lo script.
+				\begin{itemize}
+					\item
+						gruppo2.labreti.it
+						\begin{itemize}
+							\item
+								HOST
+								\begin{itemize}
+									\item
+										gruppo2.labreti.it
+										\begin{itemize}
+											\item
+												@
+											\item
+												ns
+											\item
+												vaio
+											\item
+												lenovo
+											\item
+												asus
+											\item
+												acer
+										\end{itemize}
+									\item
+										2.168.192.in-addr.arpa
+										\begin{itemize}
+											\item
+												@
+											\item
+												1
+											\item
+												10
+											\item
+												20
+											\item
+												30
+											\item
+												40
+										\end{itemize}			
+									\item
+										0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa
+										\begin{itemize}
+											\item
+												@
+											\item
+												1.0.0.0
+											\item
+												0.1.0.0
+											\item
+												0.2.0.0
+											\item
+												0.3.0.0
+											\item
+												0.4.0.0
+										\end{itemize}
+								\end{itemize}
+						\end{itemize}
+				\end{itemize}
+		\section{Problemi riscontrati}
+			\par
+				Nella precente configurazione, LDAP era stato 
+				implementato con il protocollo \texttt{ldaps} 
+				(LDAP over TLS/SSL). Abbiamo tentato 
+				l'allacciamento DNS attraverso questa 
+				configurazione ma non abbiamo ottenuto alcun 
+				risultato utilizzando l'URI 
+				\texttt{ldaps://\emph{indirizzo}/} in 
+				\texttt{named.conf}. 
+				Per questo motivo \'e necessario cambiare 
+				\texttt{slapd.service} modificando l'opzione 
+				\texttt{ExecStart} cos\'i:
+				\begin{verbatim}
+ExecStart=/usr/bin/slapd -u ldap -g ldap -h "ldap:/// ldaps:///"
+				\end{verbatim}
+				Aggiungendo \texttt{ldap:///}, \texttt{slapd} 
+				rimane in ascolto anche sulla porta standard 
+	 			oltre che su quella sicura. A questo punto 
+	 			verifichiamo il corretto funzionamento di named 
+	 			con la nuova configurazione attraverso questi 
+	 			comandi:
+	 			\begin{verbatim}
+sudo systemctl daemon-reload
+sudo systemctl restart slapd.service
+sudo systemctl status slapd.service
+sudo systemctl restart named.service
+sudo systemctl status named.service
+	 			\end{verbatim}
+	 			e controlliamo l'assenza di errori.
+	 		\par
+	 			\'E anche possibile 
+	 			abilitare il \texttt{tls} mediante l'opzione 
+	 			\texttt{!x-tls} in coda all'URI ma anche 
+	 			questa soluzione non ha prodotto risultati. 
+	 			Navigando in rete, sembra che in molti abbiano 
+	 			riscontrato il nostro stesso problema. Il 
+	 			backend con \texttt{ldaps} esula dalle 
+	 			richieste di progetto.
+		\newpage
+	\part{Listati}
+		\par
+			Per problemi di spazio siamo andati a capo dove 
+			necessario. Per il corretto funzionamento, riferirsi 
+			direttamente al codice sorgente.
+		\section{\texttt{domain.conf}}
+			\par
+				File di configurazione per il server DNS, in 
+				cui vengono anche definiti tutti gli host ed 
+				alcune configurazioni per il backed LDAP.
+			\texttt{\lstinputlisting[breaklines]{../domain.conf}}
+			\newpage
+		\section{\texttt{setup\_dns.sh}}
+			\par
+				Script per il setup di BIND. Qui si pu\'o 
+				scegliere tra cinque opzioni:
+				\begin{itemize}
+					\item
+						\texttt{./setup\_dns -az}
+						\begin{itemize}
+							\item
+								Esegue 
+								l'installazione 
+								automatica 
+								creando i file 
+								di zona e 
+								modificando 
+								\texttt{named.conf}.
+						\end{itemize}
+					\item
+						\texttt{./setup\_dns -al}
+						\begin{itemize}
+							\item
+								Esegue 
+								l'installazione 
+								automatica 
+								creando i file 
+								\texttt{ldif} 
+								e caricandoli 
+								nel database 
+								LDAP.
+								Viene inoltre 
+								modificando 
+								\texttt{named.conf}
+								in modo che 
+								utilizzi il 
+								server LDAP 
+								come backend.
+						\end{itemize}
+					\item
+						\texttt{./setup\_dns -aaz} ed 
+						\texttt{./setup\_dns -aal}
+						\begin{itemize}
+							\item
+								Come le due 
+								operazioni 
+								sopra ma 
+								vengono 
+								modificate le 
+								impostazioni di 
+								rete 
+								automaticamente.
+						\end{itemize}
+					\item
+						\texttt{./setup\_dns -d}
+						\begin{itemize}
+							\item
+								Cancella la 
+								configurazione 
+								per 
+								\texttt{resolvconf.conf}
+								in modo che al 
+								riavvio del 
+								computer 
+								vengano 
+								ripristinate 
+								le precedenti 
+								impostazioni di 
+								\texttt{resolv.conf}
+						\end{itemize}
+				\end{itemize}
+			\texttt{\lstinputlisting{../setup_dns.sh}}
+			\newpage
+		\section{\texttt{chg\_nw\_settings.sh}}
+			\par
+				Script per l'assegnazione degli indirizzi di 
+				rete (validi fino al riavvio della macchina) 
+				sull'interfaccia cablata.
+			\par
+				Lo script \texttt{chg\_nw\_settings.sh} ci 
+				permette di assegnare gli indirizzi di tipo 
+				IPv4 ed IPv6, le sottoreti e l'indirizzo di 
+				broadcast IPv4 all'interfaccia di rete 
+				cablata. Questi indirizzi corrispondono agli 
+				indirizzi su cui \texttt{named} ascolta le 
+				richieste.
+			\par
+				Per quanto riguarda l'assegnazione di indirizzi 
+				IPv6 abbiamo riscontrato problemi inizialmente 
+				per la struttura stessa del protocollo di rete. 
+				Anche se si assegna un indirizzo di questo 
+				tipo ad un'interfaccia il computer aspetta la 
+				\emph{portante} in modo da evitare collisioni 
+				con altri computer. Quindi un modo di risolvere 
+				il problema \'e quello di attaccare un cavo di 
+				rete all'intefaccia.
+			\texttt{\lstinputlisting{../chg_nw_settings.sh}}
+			\newpage
+		\section{\texttt{chg\_resolv\_settings.sh}}
+			\par
+				Script per cambiare il file 
+				\texttt{/etc/resolvconf.conf} in modo che 
+				la risuluzione dei nomi host avenga con il 
+				nostro server DNS.
+			\par
+				Per fare funzionare le query su un client \'e 
+				necessario cambiare alcune impostazioni di 
+				rete in modo che le ricerche con 
+				\texttt{dig} vengano fatte con il nostro 
+				server (senza bisogno di esplicitarlo) \'e 
+				necessario modificare il file 
+				\texttt{/etc/resolv.conf}, mettendogli in 
+				testa gli indirizzi del nostro server. Nel 
+				nostro caso gli indirizzi sono 
+				\texttt{192.168.2.1} e \texttt{2002::1}. 
+				Per fare un modo di non esplicitare sempre il 
+				dominio di ricerca accanto all'hostname (nel 
+				nosto caso \texttt{gruppo2.labreti.it}), quando 
+				usiamo il comando \texttt{host}, \'e necessario 
+				aggiungere anche questo nel file. Spesso, 
+				tuttavia, le informazioni contenute in 
+				\texttt{/etc/resolv.conf} vengono sovrascritte 
+				ad ogni riavvio, o addirittura ad ogni evento 
+				provocato dai pi\'u disparati network manager. 
+				Per questo motivo abbiamo deciso di agire su 
+				\texttt{/etc/resolvconf.conf} che ci permette 
+				di fare tutte le cose scritte precentemente  
+				senza che le informazioni vengano sovrascritte. 
+			\texttt{\lstinputlisting{../chg_resolv_settings.sh}}
+			\newpage
+		\section{Zona diretta zone file}
+			\par
+				Di seguito troviamo le tre zone sotto forma di 
+				zone file.
+			\texttt{\lstinputlisting[breaklines]{../gruppo2.labreti.it}}
+			\newpage
+		\section{Zona inversa IPv4 zone file}
+			\texttt{\lstinputlisting[breaklines]{../2.168.192.in-addr.arpa}}
+			\newpage
+		\section{Zona inversa IPv6 zone file}
+			\texttt{\lstinputlisting[breaklines]{../0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa.}}
+			\newpage
+		\section{\texttt{named.conf} per i file di zona}
+			\par
+				Nota bene: con la notazione \texttt{IN} 
+				nell'inestazione delle zone si identifica la 
+				classe di dati \texttt{INternet}
+				Se omessa nella definizione \'e comunque 
+				assunta di default.
+			\texttt{\lstinputlisting[breaklines]{../named.conf.zones}}
+			\newpage
+		\section{Zona diretta LDAP}
+			\par
+				Di seguito troviamo le tre zone sotto forma di 
+				file \texttt{ldif}.
+			\texttt{\lstinputlisting[breaklines]{../gruppo2.labreti.it.zone.ldif}}
+			\newpage
+		\section{Zona inversa IPv4 LDAP}
+			\texttt{\lstinputlisting[breaklines]{../2.168.192.in-addr.arpa.zone.ldif}}
+			\newpage
+		\section{Zona inversa IPv6 LDAP}
+			\texttt{\lstinputlisting[breaklines]{../0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.2.ip6.arpa.zone.ldif}}
+			\newpage
+		\section{\texttt{named.conf} per LDAP}
+			\par
+				Nota bene: L'URI ha il \texttt{dn} 
+				(\texttt{Distinguished Name}) diverso per ogni 
+				zona, identificata da \texttt{ZoneName}.
+			\texttt{\lstinputlisting[breaklines]{../named.conf.ldap}}
+			\newpage
+		\section{\texttt{named.service} per \texttt{systemd}}
+			\par
+			\texttt{\lstinputlisting{../named.service}}
+\end{document}
+
+%'\texttt{\symbol{92}0}'.

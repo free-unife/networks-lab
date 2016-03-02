@@ -1,0 +1,88 @@
+#
+# gruppo2.labreti.it.zone.ldif
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# Zone definition.
+dn: zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+zoneName: gruppo2.labreti.it
+relativeDomainName: gruppo2.labreti.it
+
+# SOA.
+dn: relativeDomainName=@,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: @
+zoneName: gruppo2.labreti.it
+dNSTTL: 86400
+dNSClass: NS
+sOARecord: ns.gruppo2.labreti.it. root.gruppo2.labreti.it. 2015051901 2d 3h 1h 1w
+nSRecord: ns.gruppo2.labreti.it.
+
+# Name server.
+dn: relativeDomainName=ns,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: ns
+zoneName: gruppo2.labreti.it
+dNSTTL: 86400
+dNSClass: IN
+aRecord: 192.168.2.10
+aAAARecord: 2002:0000:0000:0000:0000:0000:0000:0001
+
+# Host vaio.
+dn: relativeDomainName=vaio,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: vaio
+zoneName: gruppo2.labreti.it
+dNSTTL: 86400
+dNSClass: IN
+aRecord: 192.168.2.50
+aAAARecord: 2002:0000:0000:0000:0000:0000:0000:0010
+
+# Host lenovo.
+dn: relativeDomainName=lenovo,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: lenovo
+zoneName: gruppo2.labreti.it
+dNSTTL: 86400
+dNSClass: IN
+aRecord: 192.168.2.20
+aAAARecord: 2002:0000:0000:0000:0000:0000:0000:0020
+
+# Host asus.
+dn: relativeDomainName=asus,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: asus
+zoneName: gruppo2.labreti.it
+dNSTTL: 85400
+dNSClass: IN
+aRecord: 192.168.2.30
+aAAARecord: 2002:0000:0000:0000:0000:0000:0000:0030
+
+# Host acer.
+dn: relativeDomainName=acer,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: acer
+zoneName: gruppo2.labreti.it
+dNSTTL: 86400
+dNSClass: IN
+aRecord: 192.168.2.40
+aAAARecord: 2002:0000:0000:0000:0000:0000:0000:0040

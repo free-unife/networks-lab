@@ -1,0 +1,158 @@
+#
+# requirementsAndIdeas.txt
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+PRIME 2 LEZIONI:
+- i nostri indirizzi ipv6 vanno messi a mano
+- installiamo bind
+- assicuratevi che seLinux sia disattivato -> non farlo andare con chroot -> utente named
+- file di configurazione /etc/named.conf troviamo tutti dei parametri che sono o non sono da configurare e dobbiamo inserire almeno 4 macchine all'interno del nostro dns
+- utilizzando il comando dig sia nel reverse che nel diretto il dns mi risponde
+- non DEVE ESISTERE LOCALHOST se abbiamo iptables attivo
+- alla scheda di rete associamo 192.168.2.1 -> dns
+
+
+
+3 LEZIONE ---> integra dns in ldap:
+	non ci saranno piu i file di configurazione nel dns, ma le macchine saranno definite dentro ldap.
+	il file di configurazione named.conf andrà a prendere le sue zone dentro ldap.
+
+- zone:
+	file (le parti) in cui andremo a definire il nostro dominio:
+		1 zona diretta: nome -> ipv4 , ipv6
+		2 zone inverse:
+			zona inversa ipv4 -> nome
+			zona inversa ipv6 -> nome
+
+		N.B. dove c'è scritto "nome" dev'essere lo stesso nome. Si parla della stessa macchina definita in modi diversi.
+
+ESEMPIO:
+	se io prendo una macchina e la chiamo MASTER e la definisco dentro alla mia zona diretta con indirizzo ipv4 192.168.x.1 ed indirizzo ipv6 2001::1 nella mia zona inversa avrò 192.168.x.1 con il nome MASTER ed una con 2001::1 con nome MASTER.
+
+
+
+
+IPv4 subnet					192.168.2.0/24
+IPv6 subnet					2002::/64
+
+DNS server IPv4 (bind)				192.168.2.1
+DNS server IPv6 (bind)				2002::1
+
+Hosts IPv4					192.168.2.2->254
+Hosts IPv6					2002::0002->2002::FFFF:FFFF:FFFF:FFFE
+
+
+#config:
+/etc/named.conf
+===============
+
+options
+{
+	directory "/var/bind/zones";
+	
+	listen-on-v6 { yes; }
+	listen-on port 53 { 192.168.2.1; 2002::2 };
+};
+
+#view "internal"
+#{
+#	match-clients { 192.168.2.0/24; 2002::/64; };
+#	recursion yes;
+                 
+	zone "gruppo2.labreti.it"
+	{
+		type master;
+		file "gruppo2.labreti.it.internal";
+		allow-transfer { any; };
+	};
+#};
+
+#zones:
+/var/named/domain.tld.zone
+
+guardare https://wiki.gentoo.org/wiki/BIND/Tutorial
+
+Perchè i client funzionino correttamente è necessario aggiungere le seguenti 
+righe ad /etc/resolv.conf
+search gruppo2.labreti.it.
+nameserver IP_DEL_SERVER(AVOID LOCALHOST)
+
+Per testare la configurazione:
+host server1
+ed in fallback:
+host server1.gruppo2.labreti.it. IP_DEL_SERVER
+Con dig:
+dig server1.gruppo2.labreti.it.
+ed in fallback:
+dig @IP_DELSERVER server1.gruppo2.labreti.it.
+?Trovare un modo? per evitare di mettere FQDN con dig
+
+IPV6 funziona pianissimo;basta settare 2002::1 in testa ad /etc/resolv.conf 
+per verificarlo. !!!!!!!!!!!!!!!!!!!!!!!!RISOLVERE!!!!!!!!!!!!!!!!!!!!
+Va in timeout!
+
+dig asus.gruppo2.labreti.it. all
+per vedere tutti i record compresi AAAA (ipv6)
+
+# Each host line is a "resource record" with the following syntax:
+# <name> <type> <class> <ttl> <rdlength> <rdata>
+#
+# name: host name. A free standing @ is used to denote the current origin.
+# type:
+# CNAME type are aliases to host or AAA entries.
+# serial rappresents the modification date of the file zone, with a number
+# added (today's serial).
+# TXT are info read by machines.
+# SOA=Start of authority.
+
+
+# ipv6 funziona se collegato ad un cavetto:
+[manjaro@pc-mini-2 final]$ dig -x 192.168.2.20
+
+; <<>> DiG 9.9.2-P2 <<>> -x 192.168.2.20
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 62987
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 3
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 4096
+;; QUESTION SECTION:
+;20.2.168.192.in-addr.arpa.	IN	PTR
+
+;; ANSWER SECTION:
+20.2.168.192.in-addr.arpa. 172800 IN	PTR	lenovo.gruppo2.labreti.it.
+
+;; AUTHORITY SECTION:
+2.168.192.in-addr.arpa.	172800	IN	NS	ns.gruppo2.labreti.it.
+
+;; ADDITIONAL SECTION:
+ns.gruppo2.labreti.it.	172800	IN	A	192.168.2.1
+ns.gruppo2.labreti.it.	172800	IN	AAAA	2002::1
+
+;; Query time: 0 msec
+;; SERVER: 2002::1#53(2002::1)
+;; WHEN: Fri Mar 27 18:41:56 2015
+;; MSG SIZE  rcvd: 154
+
+http://www.redhat.com/archives/libvir-list/2012-September/msg01827.html
+
