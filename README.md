@@ -8,6 +8,21 @@ reprocessed to be clear and usable. Since there are quite a lot of files, and
 the fact that this is a repository with the least priority among all, the 
 processing may take a long time.
 
+## Wiki contributions
+The following is a list of Arch Linux wiki pages contributed because of this 
+course:
+- [Dovecot](https://wiki.archlinux.org/index.php?title=Dovecot&diff=prev&oldid=370632)
+- [Amavis](https://wiki.archlinux.org/index.php?title=Amavis&diff=prev&oldid=370822)
+- [Amavis](https://wiki.archlinux.org/index.php?title=Amavis&diff=prev&oldid=370850)
+- [Amavis](https://wiki.archlinux.org/index.php?title=Amavis&diff=prev&oldid=370909)
+- [Amavis](https://wiki.archlinux.org/index.php?title=Amavis&diff=prev&oldid=371074)
+- [PostFix Howto With SASL](https://wiki.archlinux.org/index.php?title=PostFix_Howto_With_SASL&diff=prev&oldid=371426)
+- [PostFix Howto With SASL](https://wiki.archlinux.org/index.php?title=PostFix_Howto_With_SASL&diff=prev&oldid=371433)
+- [PostFix Howto With SASL](https://wiki.archlinux.org/index.php?title=PostFix_Howto_With_SASL&diff=prev&oldid=371435)
+- [PostFix Howto With SASL](https://wiki.archlinux.org/index.php?title=PostFix_Howto_With_SASL&diff=prev&oldid=371769)
+- [Amavis](https://wiki.archlinux.org/index.php?title=Amavis&diff=prev&oldid=371770)
+- [PostFix](https://wiki.archlinux.org/index.php?title=Postfix&diff=prev&oldid=371771)
+
 ## How to compile and compress the resulting pdf file:
 ```
 $ pdflatex file.tex
