@@ -1,0 +1,64 @@
+#
+# gruppo2.labreti.it.aliases.ldif
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# Name server.
+dn: relativeDomainName=mail,zoneName=gruppo2.labreti.it,ou=HOST,dc=gruppo2,dc=labreti,dc=it
+objectClass: dNSZone
+relativeDomainName: mail
+zoneName: gruppo2.labreti.it
+dNSTTL: 86400
+dNSClass: MX
+aRecord: 192.168.2.10
+aAAARecord: 2002:0000:0000:0000:0000:0000:0000:000a
+
+# Reverse mx entries.
+
+# ALIAS, gruppo2.labreti.it
+dn: ou=ALIAS,dc=gruppo2,dc=labreti,dc=it
+ou: ALIAS
+objectClass: organizationalUnit
+
+# Mail aliases.
+dn: cn=franco.masotti,ou=ALIAS,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: nisMailAlias
+cn: franco.masotti
+rfc822MailMember: francomasotti
+
+dn: cn=danny.lessio,ou=ALIAS,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: nisMailAlias
+cn: danny.lessio
+rfc822MailMember: dannylessio
+
+dn: cn=jack.tripper,ou=ALIAS,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: nisMailAlias
+cn: jack.tripper
+rfc822MailMember: jacktripper
+
+dn: cn=janet.wood,ou=ALIAS,dc=gruppo2,dc=labreti,dc=it
+objectClass: top
+objectClass: nisMailAlias
+cn: janet.wood
+rfc822MailMember: janetwood

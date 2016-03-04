@@ -1,0 +1,253 @@
+#
+# some_commands.txt
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+sudo systemctl stop postfix
+sudo postalias /etc/postfix/aliases
+./add_mx_entry.sh
+sudo cp mail.cf /etc/postfix/mail.cf
+sudo systemctl start postfix
+sudo systemctl status postfix -l
+telnet mail.gruppo2.labreti.it
+
+ehlo mail.gruppo2.labreti.it
+mail from:<manjaro@mail.gruppo2.labreti.it>
+rcpt to:<manjaro@mail.gruppo2.labreti.it>
+data
+Hello this is a test mail.
+
+.
+quit
+
+ls ~/Maildir/new
+cat --whatever/hashed string--
+
+
+[manjaro@pc-mini-2 ~]$ telnet mail.gruppo2.labreti.it 25
+Trying 192.168.2.1...
+Connected to mail.gruppo2.labreti.it.
+Escape character is '^]'.
+220 mail.gruppo2.labreti.it ESMTP Postfix
+ehlo mail.gruppo2.labreti.it
+250-mail.gruppo2.labreti.it
+250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250 SMTPUTF8
+mail from:<manjaro@mail.gruppo2.labreti.it>
+250 2.1.0 Ok
+rcpt to:<francomasotti@mail.gruppo2.labreti.it>
+250 2.1.5 Ok
+data
+354 End data with <CR><LF>.<CR><LF>
+Ciao sono manjaro a dopo.
+
+.
+250 2.0.0 Ok: queued as 632F7C00BC
+quit
+221 2.0.0 Bye
+Connection closed by foreign host.
+
+login come francomasotti e controlla la ~/Maildir/
+
+
+# Vedi guida ubuntu dovecot.
+
+[manjaro@pc-mini-2 final]$ telnet mail.gruppo2.labreti.it imap
+Trying 2002::1...
+Connected to mail.gruppo2.labreti.it.
+Escape character is '^]'.
+* OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE 
+STARTTLS AUTH=PLAIN] Dovecot ready.
+
+
+[manjaro@pc-mini-2 final]$ telnet mail.gruppo2.labreti.it 993
+Trying 2002::1...
+Connected to mail.gruppo2.labreti.it.
+Escape character is '^]'.
+quit
+quit
+Connection closed by foreign host.
+[manjaro@pc-mini-2 final]$ openssl s_client -connect 
+mail.gruppo2.labreti.it:993
+CONNECTED(00000003)
+depth=0 C = AU, ST = Some-State, O = Internet Widgits Pty Ltd, CN = 
+gruppo2.labreti.it
+verify error:num=18:self signed certificate
+verify return:1
+depth=0 C = AU, ST = Some-State, O = Internet Widgits Pty Ltd, CN = 
+gruppo2.labreti.it
+verify return:1
+---
+Certificate chain
+ 0 s:/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/CN=gruppo2.labreti.it
+   i:/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/CN=gruppo2.labreti.it
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDlzCCAn+gAwIBAgIJAPf6nRx2lVENMA0GCSqGSIb3DQEBCwUAMGIxCzAJBgNV
+BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQxGzAZBgNVBAMMEmdydXBwbzIubGFicmV0aS5pdDAeFw0x
+NTA0MDgwOTE4NDBaFw0yNTA0MDUwOTE4NDBaMGIxCzAJBgNVBAYTAkFVMRMwEQYD
+VQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBM
+dGQxGzAZBgNVBAMMEmdydXBwbzIubGFicmV0aS5pdDCCASIwDQYJKoZIhvcNAQEB
+BQADggEPADCCAQoCggEBANrHk4RJJphcTPEyQsirCqFnsKBapXjzHjg94nR+hjUT
+l9BfsnSMY4rLnttt7grw10Dp9H2nuADlTZqkx9I91pxOlZghYdfWZ72O9hGfoftg
+zdZ7n8/URZ4frjE22l8aSnXkXS+sklatDFIukK7sExCoDZ6AXIyWHBl8AAFeXgxk
+hzGmHij8w8apKz9vO02Mu/tAedUV7DDLuBiKQWtjnvmyGSzMl7otHheb+cPyWsFD
+G7s0Efk8oIAQfk7cU8fY006R9/F1giEw1vF6sGqhGhG+UQFzKZGJUdk7yhesT46g
+Q9w4skrmyMgFVz58zXx2oqJfZlgkVr8cORNUtMdre/sCAwEAAaNQME4wHQYDVR0O
+BBYEFA2F6Fx/MKUE8G9nVa7vSesPiSFtMB8GA1UdIwQYMBaAFA2F6Fx/MKUE8G9n
+Va7vSesPiSFtMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAJRtZNvb
+KVI6Gr20pOITo3+M1Zy+9MwslcJHcPH9LEmSc8vpsc9JcIarLPip/036YDjkyVL2
+le5PRT5utZXl5SC7myGHcI6cPIabaSHIvjbl2uPuYOJNKZe3StsSsX6fB2owCDPo
+JrVTshzEinH1WIpsuQ/iWmuQM8hqq5KJ673ClRF2i5Fv0DdX7WQBD66YFdm24hTR
+EmiZhAWAt+yqOEQJlspKbmJIhCfa/dStv0ZbVR6MEvtI8LIZ7XeRphPzHFNxFvye
+k1P30vNW/M91s7vJ303DmPKE+yWDcThMUWbHQOHBLO7qJ1gIh+jzayxDH9kpgiSM
+209XducVqZ8eQyw=
+-----END CERTIFICATE-----
+subject=/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/CN=gruppo2.labreti.it
+issuer=/C=AU/ST=Some-State/O=Internet Widgits Pty Ltd/CN=gruppo2.labreti.it
+---
+No client certificate CA names sent
+Peer signing digest: SHA512
+Server Temp Key: ECDH, B-571, 570 bits
+---
+SSL handshake has read 1671 bytes and written 562 bytes
+---
+New, TLSv1/SSLv3, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: zlib compression
+Expansion: zlib compression
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: 
+C19C7E49005CC488961A6784D283828354E597ECE8D210B128921FAD2F5BB74A
+    Session-ID-ctx: 
+    Master-Key: 
+2C5A7546C176A65972CC430D228F1B68F13B0CE17C2F825F1CAC520C67EB4E020F698A39F8B0C1199D46B41254637D06
+    Key-Arg   : None
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 300 (seconds)
+    TLS session ticket:
+    0000 - 99 4d b7 63 2c 8c 34 ea-a8 47 7b e9 2e 6c d2 25   .M.c,.4..G{..l.%
+    0010 - 0c 01 21 7c 8d 56 09 21-d0 59 f8 81 7b f5 cf 65   ..!|.V.!.Y..{..e
+    0020 - 91 d5 34 3f da 1f ee ea-98 25 27 15 27 d7 77 ec   ..4?.....%'.'.w.
+    0030 - 25 19 46 71 10 0b af f6-86 c6 1c bb 5c 87 4d ef   %.Fq........\.M.
+    0040 - ba bf 42 1a 9b ba 37 73-3c db 62 04 ca f0 3e b5   ..B...7s<.b...>.
+    0050 - a1 42 ce 9d 73 97 99 43-64 3c 36 72 0b a8 96 a0   .B..s..Cd<6r....
+    0060 - 00 8b 09 4e 81 67 f6 1b-e4 5d ad 2e 97 b8 24 8f   ...N.g...]....$.
+    0070 - 71 3a b7 53 1a e5 29 73-44 db 30 99 9e 51 24 bf   q:.S..)sD.0..Q$.
+    0080 - 97 61 9e a3 6b 0a fe f2-46 bc cd 76 d8 e8 3b d3   .a..k...F..v..;.
+    0090 - 34 0b e6 e3 12 d3 dd dd-df 83 6a 2f fc 64 1e 4b   4.........j/.d.K
+
+    Compression: 1 (zlib compression)
+    Start Time: 1429048489
+    Timeout   : 300 (sec)
+    Verify return code: 18 (self signed certificate)
+---
+* OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE 
+AUTH=PLAIN] Dovecot ready.
+A1 LOGIN jacktripper jacktripper
+A1 NO [AUTHENTICATIONFAILED] Authentication failed.
+A1 LOGIN francomasotti francomasotti
+A1 NO [AUTHENTICATIONFAILED] Authentication failed.
+A1 LOGIN username password
+A1 NO [AUTHENTICATIONFAILED] Authentication failed.
+A1 LOGIN manjaro 1*7-l+j/2
+A1 OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE 
+SORT SORT=DISPLAY THREAD=REFERENCES THREAD=REFS THREAD=ORDEREDSUBJECT 
+MULTIAPPEND URL-PARTIAL CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS 
+LIST-EXTENDED I18NLEVEL=1 CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN 
+CONTEXT=SEARCH LIST-STATUS SPECIAL-USE BINARY MOVE] Logged in
+A2 LIST "" "*"
+* LIST (\HasNoChildren) "." INBOX
+A2 OK List completed.
+A3 EXAMINE INBOX
+* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)
+* OK [PERMANENTFLAGS ()] Read-only mailbox.
+* 3 EXISTS
+* 3 RECENT
+* OK [UNSEEN 1] First unseen.
+* OK [UIDVALIDITY 1429048817] UIDs valid
+* OK [UIDNEXT 4] Predicted next UID
+* OK [HIGHESTMODSEQ 1] Highest
+A3 OK [READ-ONLY] Examine completed (0.263 secs).
+
+
+
+
+
+# CON GLI ALIAS
+
+* OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE 
+AUTH=PLAIN] Dovecot ready.
+A1 LOGIN francomasotti francomasotti
+A1 OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR LOGIN-REFERRALS ID ENABLE IDLE 
+SORT SORT=DISPLAY THREAD=REFERENCES THREAD=REFS THREAD=ORDEREDSUBJECT 
+MULTIAPPEND URL-PARTIAL CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS 
+LIST-EXTENDED I18NLEVEL=1 CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN 
+CONTEXT=SEARCH LIST-STATUS SPECIAL-USE BINARY MOVE] Logged in
+A2 LIST "" "*"
+* LIST (\HasNoChildren) "." INBOX
+A2 OK List completed.
+A3 EXAMINE INBOX
+* FLAGS (\Answered \Flagged \Deleted \Seen \Draft)
+* OK [PERMANENTFLAGS ()] Read-only mailbox.
+* 1 EXISTS
+* 1 RECENT
+* OK [UNSEEN 1] First unseen.
+* OK [UIDVALIDITY 1429528915] UIDs valid
+* OK [UIDNEXT 2] Predicted next UID
+* OK [HIGHESTMODSEQ 2] Highest
+A3 OK [READ-ONLY] Examine completed (0.001 secs).
+A4 FETCH 1 BODY[]
+* 1 FETCH (BODY[] {584}
+Return-Path: <jacktripper@mail.gruppo2.labreti.it>
+X-Original-To: franco.masotti@mail.gruppo2.labreti.it
+Delivered-To: franco.masotti@mail.gruppo2.labreti.it
+Received: from mail.gruppo2.labreti.it (ns.gruppo2.labreti.it [192.168.2.1])
+        by mail.gruppo2.labreti.it (Postfix) with ESMTP id 91517C00B4
+        for <franco.masotti@mail.gruppo2.labreti.it>; Mon, 20 Apr 2015 13:37:22 
++0200 (CEST)
+Message-Id: <20150420113749.91517C00B4@mail.gruppo2.labreti.it>
+Date: Mon, 20 Apr 2015 13:37:22 +0200 (CEST)
+From: jacktripper@mail.gruppo2.labreti.it
+
+This is a test mail. Hello frnmst.
+
+)
+A4 OK Fetch completed.
+
+
+# POSTFIX SSL/TLS (WITHOUT STARTTLS)
+openssl s_client -connect mail.gruppo2.labreti.it:587
+

@@ -1,0 +1,532 @@
+%
+% relazione_es3.tex
+%
+% Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+%                    dannylessio (Danny Lessio)
+%
+% This file is part of networks-lab.
+%
+% networks-lab is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% networks-lab is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+%
+
+
+\makeatletter
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
+
+\documentclass[9pt, a4paper, oneside]{article}
+\usepackage[a4paper]{geometry}
+\usepackage{setspace} % packets
+%\usepackage{verbatim} % include source files
+\usepackage{amsmath} %powers
+\usepackage{listings}
+\singlespacing % interlinea singolo
+\title{Relazione esercitazione 4 Laboratorio di reti\newline Server Mail con Postfix e Dovecot}
+\author{Franco Masotti \and Danny Lessio}
+\date{April 26, 2015}
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+    \footnotetext{networks-lab  Copyright (C) 2016  frnmst (Franco Masotti), 
+dannylessio (Danny Lessio).  This document comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it 
+under certain conditions; see LICENSE file for details.}
+	\part{Configurazione ed installazione del server mail}
+		\section{Scopo dell'esercitazione}
+			\par
+				L'obbiettivo di questa esercitazione \'e quello 
+				di realizzare un server mail completo sia dal 
+				punto di vista delle funzionalit\'a sia da 
+				quello della sicurezza.
+		\section{Componenti}
+			\par
+				Tutti gli strumenti necessari sono presenti 
+				sia nei repository ufficiali sia in quelli non 
+				ufficiali.
+				Di seguito sono elencati componenti e scopo:
+				\begin{itemize}
+					\item
+						Server SMTP
+					\begin{itemize}
+						\item
+							Il server SMTP ha lo 
+							scopo di inviare la 
+							posta.
+						\item
+							Per questo componente 
+							abbiamo utilizzato 
+							\texttt{Postfix}\footnote{http://www.postfix.org/}
+							. 
+					\end{itemize}
+					\item
+						Server IMAP
+					\begin{itemize}
+						\item
+							Questo server ha lo 
+							scopo di ricevere la 
+							posta grazie alle 
+							notifiche del server 
+							SMTP.
+						\item
+							Il componente che 
+							abbiamo usato \'e
+							\texttt{Dovecot}\footnote{http://dovecot.org/}
+					\end{itemize}
+					\item
+						Autenticazione degli utenti
+					\begin{itemize}
+						\item
+							Abbiamo effettuato 
+							l'autenticazione 
+							degli utenti LDAP con 
+							\texttt{PAM}\footnote{http://linux-pam.org}, 
+							in 
+							particolare con il 
+							pacchetto 
+							\texttt{nss-pam-ldapd}\footnote{https://www.archlinux.org/packages/community/x86\_64/nss-pam-ldapd/}
+							. 
+							Questo tipo di 
+							autenticazione vale sia 
+							per Dovecot sia per 
+							Postfix (che sfrutta 
+							proprio Dovecot per 
+							questo).
+					\end{itemize}
+					\item
+						Sicurezza
+					\begin{itemize}
+						\item
+							Per controllare le mail 
+							abbiamo usato 
+							\texttt{ClamAv}\footnote{http://www.clamav.net/} 
+							e 
+							\texttt{Spamassassin}\footnote{http://spamassassin.apache.org}.
+							Il primo serve a 
+							verficare la presenza 
+							di virus mentre il 
+							secondo per avvertire 
+							il destinatario che si 
+							tratta di spam.
+						\item
+							Per mettere in 
+							comunicazione questi 
+							due programmi con 
+							Postfix abbaimo usato 
+							\texttt{Amavis}\footnote{http://www.ijs.si/software/amavisd/}
+					\end{itemize}
+					\item
+						Mail aliases
+					\begin{itemize}
+						\item
+							Per effettuare il mail 
+							aliasing, cio\'e la 
+							traduzione da un nome 
+							mail alternativo al 
+							nome reale abbiamo 
+							utilizzato Postfix che 
+							va ad attingere 
+							direttamente al 
+							database LDAP.
+					\end{itemize}
+					\item
+						SSL/TLS
+					\begin{itemize}
+						\item
+							Tutte le comunicazioni 
+							sia in entrata, sia in 
+							uscita, sono protette 
+							con SSL/TLS sfruttando 
+							i certificati di 
+							OpenLDAP. Questo lo si 
+							pu\'o vedere nei file 
+							di configurazione di 
+							Postfix e Dovecot. 
+						\item
+							Inoltre non \'e 
+							possibile utilizzare 
+							comunicazioni 
+							\emph{non} 
+							protette.
+					\end{itemize}
+				\end{itemize}
+		\section{Postfix}
+			\par
+				Nel file \texttt{main.cf} si trovano le 
+				impostazioni di base valide per tutti i socket 
+				in ascolto, mentre in \texttt{master.cf} \'e 
+				possibile definire nuovi socket e fare 
+				l'override delle impostrazioni (anche 
+				aggiungendone di nuove).
+			\par
+				\textbf{main.cf}:
+				\begin{itemize}
+					\item
+						Abbiamo configurato Postfix in 
+						modo che utilizzi le directory 
+						di tipo \texttt{Maildir}. In 
+						questo modo viene creata tale 
+						directory nella home di ogni 
+						utente nella quale viene 
+						recapitata la posta.
+					\item
+						Abbiamo configurato dominio ed 
+						hostname del server SMTP 
+						rispettivamente con 
+						\texttt{gruppo2.labreti.it} e 
+						\texttt{mail.gruppo2.labreti.it}
+					\item
+						Grazie alla direttiva 
+						\texttt{alias\_maps} 
+						\'e possibile 
+						utilizzare gli alias 
+						mail salvati 
+						nell'albero LDAP. Abbiamo 
+						creato un file chiamato 
+						\texttt{ldap-aliases.cf} in cui 
+						\'e definito come recuperare il 
+						nome originario.
+					\item
+						Per fare in modo che l'utente 
+						venga notificato dell'arrivo di 
+						nuova posta (grazie a Dovecot) 
+						bisogna esplicitare il valore 
+						di \texttt{mailbox\_command}
+					\item
+						Abbiamo anche abilitato 
+						esplicitamente l'ascolto in 
+						IPv4 ed IPv6.
+				\end{itemize}
+			\par
+				\textbf{master.cf}:
+				\begin{itemize}
+					\item
+						All'interno di questo file 
+						abbiamo definito la porta 587 
+						(vedi RFC 
+						2476\footnote{http://www.ietf.org/rfc/rfc2476.txt})
+						come porta in ascolto sicura. 
+						Infatti SSL/TLS \'e abilitato 
+						di default. Se non fosse cos\'i 
+						basterebbe fare sniffing del 
+						traffico per intercettare le 
+						password di autenticazione 
+						oltre che per leggere la 
+						posta. Tutto questo \'e stato 
+						possibile anche grazie ai 
+						certificati precedentemente 
+						generati per OpenLDAP.
+					\item
+						Per mettere in comunicazione 
+						anti-virus e anti-spam abbiamo 
+						aperto la porta 10024 (socket 
+						di tipo unix) e la porta 10025 
+						(socket di tipo inet). La prima 
+						\'e utlizzata da Postfix per 
+						mandare ad Amavis le email da 
+						scansionare mentre la seconda 
+						da Amavis per mandare indietro 
+						a Postfix le email valide.
+					\item
+						Per autenticare gli utenti, in 
+						modo che solo chi \'e 
+						registrato con username e 
+						password possa inviare email,
+						piuttosto che dover installare 
+						e configurare un nuovo 
+						pacchetto abbiamo utilizzato 
+						l'autenticazione con 
+						\texttt{SASL} di Dovecot per 
+						tutti gli utenti (sia rete 
+						interna, sia rete esterne).
+						Questo lo si vede con la 
+						direttiva 
+						\texttt{-o smtpd\_sasl\_type=dovecot}
+						.
+				\end{itemize}
+			\par
+				\textbf{ldap-aliases.cf}:
+				\begin{itemize}
+					\item
+						Nell'albero LDAP abbiamo creato 
+						un'organizational unit chiamata 
+						\texttt{ALIAS}. Ogni utente \'e 
+						definito attraverso il campo 
+						\texttt{rfc822MailMember} che 
+						corrisponde al campo 
+						\texttt{uid} nell' 
+						organizational unit 
+						\texttt{PEOPLE}. Il campo 
+						\texttt{cn} rappresenta 
+						l'alias.
+					\item
+						La ricerca viene quindi fatta 
+						sul sottoalbero \texttt{ALIAS} 
+						con \newline
+						\texttt{query\_filter = (\&(cn=\%s)(objectClass=nisMailAlias))}
+						cio\'e viene cercato l'alias 
+						con il cn corrispondente, e che 
+						faccia parte della classe 
+						\texttt{nisMailAlias} (usata 
+						solo dagli alias). Il valore 
+						ritornato \'e di tipo 
+						\texttt{rfc822MailMember} 
+						(vedi lda direttiva: 
+						\texttt{result\_attribute = rfc822MailMember})
+						.
+				\end{itemize}
+		\section{Dovecot}
+			\par
+				Dovecot contiene molti fie di configurazione ma 
+				per semplicit\'a abbiamo raggruppato tutto in 
+				\texttt{dovecot.conf} dopo aver eliminato 
+				tutti i commenti.
+			\par
+				\textbf{dovecot.conf}
+				\begin{itemize}
+					\item
+						Per leggere la posta 
+						utilizziamo esclusivamente il 
+						protocollo \texttt{IMAP} che 
+						permette agli utenti la 
+						mobilit\'a. Le mail (ed il 
+						loro stato) sono salvate sul 
+						server. Con il 
+						protocollo \texttt{POP} al 
+						conrario si impone 
+						di scaricare la mail dal server 
+						per poi cancellarle da questo e 
+						comunque non fornisce 
+						sincronizzazione. POP non \'e 
+						adatto alla gestione delle 
+						mail tra pi\'u dispositivi e 
+						per questo motivo sta cadendo 
+						in disuso.
+					\item
+						Anche per Dovecot va definito 
+						il tipo di mailbox, che deve 
+						essere dello stesso tipo di 
+						Postfix (vedi la direttiva:
+						\texttt{mail\_location = maildir:~/Maildir})
+						.
+					\item
+						Anche in questo caso abbiamo  
+						utilzzato le chiavi pubbliche 
+						e private di OpenLDAP per 
+						l'SSL/TLS di Dovecot con le 
+						direttive \texttt{ssl\_cert} ed 
+						\texttt{ssl\_key}.
+					\item
+						NSS permette di mappare gli 
+						utenti LDAP e di simularli 
+						come se fossero appartenenti al 
+						sistema\footnote{si pu\'o 
+						verificare con 
+						\texttt{getnent passwd}}, 
+						PAM invece ne permette solo
+						l'autenticazione. Se un utente 
+						si logga per la prima volta 
+						allora viene creata la sua home 
+						directory (dove verranno 
+						salvate le mail).
+						La creazione automatica delle 
+						home \'e garantita dalla 
+						direttiva 
+						\texttt{args = session=yes 
+						dovecot} e dal modulo 
+						\texttt{pam\_mkhomedir.so} 
+						presente nel file 
+						\texttt{dovecot} di PAM
+						.
+					\item
+						Come accennato precedentemente, 
+						Dovecot si occupa anche 
+						dell'autenticazione SMTP 
+						attraverso SASL. Avermmo potuto 
+						utilizzare l'implementazione di 
+						SASL provvista nella libreria 
+						\texttt{cyrus-sasl}\footnote{https://www.archlinux.org/packages/extra/x86\_64/cyrus-sasl/} 
+						ma abbiamo 
+						notato che Dovecot possiede 
+						gi\'a la propria 
+						implementazione di SASL, quindi 
+						abbiamo utilizzato tale 
+						sistema senza installare altri 
+						pacchetti (vedi la direttiva 
+						\texttt{service\_auth}).
+				\end{itemize}
+		\section{Amavis}
+			\par
+				Amavis \'e un'interfaccia fra il mail server 
+				SMTP (Postfix) e i mail filters (ClamAV e 
+				Spamassassin). Abbiamo installato prima ClamAV 
+				(un anti-virus libero), poi abbiamo aggiornato 
+				i suoi database con il comando 
+				\texttt{freshclam}. Successivamente lo abbiamo 
+				testato con il test virus 
+				\texttt{EICAR}\footnote{http://www.eicar.org/86-0-Intended-use.html}
+				. Infine abbiamo modificato amavis.conf in 
+				modo da abilitare la scansione dei virus.
+			\par
+				Amavis \'e in grado di gestire la configurazine 
+				di Spamassassin (da installare 
+				separatamente poich\'e non \'e fornita 
+				un'implementazione). Infatti all'interno di 
+				amavis.conf si possono modificare alcuni 
+				parametri di Spamassassin tra cui anche 
+				l'efettiva attivazione del servizio.
+			\par
+				Amavis \'e comunque in grado di gestire 
+				un'ampia variet\'a di antivirus quindi non \'e 
+				limitato a ClamAV.
+	\part{Test}
+		\section{Verifica delle funzionalit\'a}
+			\par
+				Per testare gradualmente le nostre 
+				configurazioni abbiamo usato telnet, OpenSSL e 
+				Sylpheed\footnote{http://sylpheed.sraoss.jp/en/} 
+				(un client di posta grafico). Abbiamo 
+				effettuato tre tipi di test finali:
+				\begin{itemize}
+					\item
+						Mail normale:
+						\begin{verbatim}
+apr 23 18:00:50 antergos amavis[2455]: (02455-01) Passed CLEAN {RelayedInternal},
+MYNETS LOCAL [192.168.2.1]:44188 
+<dannylessio@mail.gruppo2.labreti.it> -> <jacktripper@mail.gruppo2.labreti.it>, 
+Queue-ID: 9E0DB24270A, Message-ID: 
+<20150423180030.8d49490ef0555c080a0b2e8c@mail.gruppo2.labreti.it>, mail_id: 
+65zA1DuN5P5h, Hits: -1.01, size: 799, queued_as: E88A72426C3, 10260 ms
+						\end{verbatim}
+					\item
+						Mail spam:
+						\begin{verbatim}
+apr 23 18:01:34 antergos amavis[2456]: (02456-01) Passed SPAMMY 
+{RelayedTaggedInternal}, MYNETS LOCAL [192.168.2.1]:44193 
+<jacktripper@mail.gruppo2.labreti.it> -> <dannylessio@mail.gruppo2.labreti.it>, 
+Queue-ID: 51A7124270C, Message-ID: 
+<20150423180124.6329dd42269b72556e2fb340@mail.gruppo2.labreti.it>, mail_id: 
+FUf99b9scvM4, Hits: 3.453, size: 813, queued_as: 8DE512426E5, 10217 ms
+						\end{verbatim}
+					\item
+						Mail contenente virus di prova:
+						\begin{verbatim}
+apr 23 18:02:38 antergos amavis[2455]: (02455-02) Blocked BANNED 
+(application/x-msdownload,.dat,eicar.com) {DiscardedInternal,Quarantined}, 
+MYNETS LOCAL [192.168.2.1]:44196 <dannylessio@mail.gruppo2.labreti.it> -> 
+<jacktripper@mail.gruppo2.labreti.it>, quarantine: banned-wKIkH7wpTbg2, 
+Queue-ID: 8C22A24270D, Message-ID: 
+<20150423180238.207d7c28e55468544ea4f410@mail.gruppo2.labreti.it>, mail_id: 
+wKIkH7wpTbg2, Hits: -, size: 1390, 79 ms		                                                                  
+						\end{verbatim}
+				\end{itemize}
+		\newpage		
+	\part{Listati}
+		\section{\texttt{main.cf}}
+			\par
+				\texttt{/etc/postfix/main.cf}
+			\par
+				File di configurazione principale di Postfix.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/postfix/main.cf}}
+			\newpage
+		\section{\texttt{master.cf}}
+			\par
+				\texttt{/etc/postfix/master.cf}
+			\par
+				File di configurazione dei socket di Postfix. 
+				Qui vengono inserite le opzioni di sicurezza e 
+				di autenticazione.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/postfix/master.cf}}
+			\newpage
+		\section{\texttt{ldap-aliases.cf}}
+			\par
+				\texttt{/etc/postfix/ldap-aliases.cf}
+			\par
+				File di configurazione per il recupero del 
+				nome originario (con LDAP) a partire 
+				dall'alias.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/postfix/ldap-aliases.cf}}
+			\newpage
+		\section{File ldif con gli alias degli utenti}
+			\par
+				\texttt{gruppo2.labreti.it.aliases.ldif}
+			\par
+				Il file contiene gli alias degli utenti oltre 
+				che l'ou ALIAS ed il record MX 
+				(\emph{Mail eXchange server}) che indica 
+				semplicemente qual \'e il server mail del 
+				dominio.
+			\texttt{\lstinputlisting[breaklines]{../source/gruppo2.labreti.it.aliases.ldif}}
+			\newpage		
+		\section{\texttt{dovecot.conf}}
+			\par
+				\texttt{/etc/dovecot/dovecot.conf}
+			\par
+				File di configurazione di Dovecot.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/dovecot/dovecot.conf}}
+			\newpage
+		\section{File di autenticazione di PAM per Dovecot}
+			\par
+				\texttt{/etc/pam.d/dovecot}
+			\par
+				File di configurazione per l'autenticazione 
+				degli utenti di sistema ed LDAP. Da notare i 
+				moduli \texttt{pam\_mkhomedir.so} per la 
+				creazione automatica delle cartelle home e il 
+				modulo \texttt{pam\_ldap.so} per il 
+				collegamento al database LDAP.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/pam.d/dovecot}}
+			\newpage
+		\section{\texttt{nslcd.conf}}
+			\par
+				\texttt{/etc/nslcd.conf}
+			\par
+				File di configurazione di \texttt{nslcd} (local 
+				LDAP name service daemon). Questo demone \'e 
+				utilizzato per ottentere le informazioni degli 
+				utenti dell'ou \texttt{PEOPLE}
+			\texttt{\lstinputlisting[breaklines]{../source/etc/nslcd.conf}}
+			\newpage
+		\section{\texttt{nsswitch.conf}}
+			\par
+				\texttt{/etc/postfix/nsswitch.conf}
+			\par
+				File di configurazione di \texttt{NSS} (Name 
+				Service Switch) utilizzato dal sistema per 
+				definire dove si trovano i database di 
+				amministrazione. Da notare le 
+				direttive 
+				\texttt{passwd}, \texttt{group}, 
+				\texttt{shadow} che contengono la stringa 
+				\texttt{ldap}.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/nsswitch.conf}}
+			\newpage
+
+		\section{\texttt{amavisd.conf}}
+			\par
+				\texttt{/etc/amavisd/amavisd.conf}
+			\par
+				File di configurazione di Amavis.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/amavisd/amavisd.conf}}
+			\newpage
+		\section{\texttt{clamd.conf}}
+			\par
+				\texttt{/etc/clamav/clamd.conf}
+			\par
+				File di configurazione principale 
+				dell'antivirus ClamAV.
+			\texttt{\lstinputlisting[breaklines]{../source/etc/clamav/clamd.conf}}
+			\newpage
+\end{document}
+				

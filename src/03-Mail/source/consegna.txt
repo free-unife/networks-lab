@@ -1,0 +1,89 @@
+#
+# consegna.txt
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+0)	Postfix semplice per inviare e ricevere mail cambiando config di 
+	esempio. (75 % del lavoro)
+1)	Server per poter utilizzare posta elettronica, per poter leggere la 
+	posta (POP3 ed IMAP).
+2)	Server antivirus (clamav) ed antispam (clamassassin).
+3)	Punti 0 -> 2 insieme.
+
+Utenti di ldap. La macchina fisica sa che gli utenti sono dentro ldap così lo 
+sa anche postfix.
+Alias LDAP: ou: ALIAS
+	ALIAS utente = <nome>.<cognome>
+Porta 25.
+Postifix
+	0)	Nome macchina s cui siamo.
+	1)	DNS deve funzionare (con LDAP): dentro a questo ci va il record 
+		MX. Ci va il nome del server di posta.
+	2)	Dentro postfix ci va
+			ipv4 e ipv6.
+		3 possibilità:	Mailbox / maildir / /var/spool/mail
+				NO	   SI		NO
+		Maildir crea dentro la /home/<user> una cartrella Maildir/
+		Ogni mail è un file.					|
+									---curr/
+									|
+									---new/
+									|
+	3)	SSL/TLS							---tmp/
+
+Il primo server che viene interrogato è il DNS perchè deve essere risolto 
+gruppo2.labreti.it
+
+Il secondo server che viene interrogato è il server di posta a causa del DNS.
+
+Il terzo server è LDAP.
+
+Il modo più facile è quello di utilizzare lo stesso indirizzo per tutti.
+
+	(meglio il nome di ip)
+telnet <nome_macchina> 25 or 465 (or whatever for ssl)
+<msg>
+<invio msg>
+
+Alias:
+La mail deve arrivare con un nome utente e come alias del nome utente. dentro 
+ldap ci vanno gli alias.
+
+
+1 installare postfix, e configurarlo, come MTA -> 1° giornata
+	postfix, va configurato su ldap. Utilizzeremo anche gli alias di ldap, mettendo gli alias degli utenti che gia esistono. es: nome.cognome@
+	I server di posta lavorano sulla porta 25. 
+	3 cose da configurare in postfix:
+		- nome della macchina in cui siamo
+		- dns -> mx da inserire in ldap ipv4 + ipv6, 
+			mailbox, maildir, file /var/espool/mail mailechange
+			maildir -> /home/nomeutente/maildir cue, new, tmp (cue->letta, new -> nuova, tmp ->bozza)
+
+			Backup giornaliero (ogni cartella potrebbe occupare 15, 20, 30 gb), si fa un backup all'inizio, e si incrementa con il tempo. Posso backuppare solo il file nuovo.???
+2 server (servizio) per poter utilizzare client di posta elettronica pop3 imap
+3 server antivirus, server antispam.
+4 rendiamolo sicuro con ssl/tls.
+5 dns, servermail ed ldap devono avere LO STESSO INDIRIZZO IP.
+	fai 3 macchine virtuali ognuna con un servizio diverso???.
+
+telnet nomeMacchina 25 -> senza ssl/tls 
+telnet nomeMacchina 465?? -> con ssl/tls -> la porta non è scelta casualmente guarda le porte dedicate a questi servizi.
+
