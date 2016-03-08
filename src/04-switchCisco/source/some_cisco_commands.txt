@@ -1,0 +1,62 @@
+#
+# some_cisco_commands.txt
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# effettua login:
+enable
+
+# da login effettuato(enable):
+show running-config 			# -> mostra configurazione generale
+clock set 12:35:00 12 April 2015	# -> cambia ora
+
+	# salvataggio configurazione switch -> pc
+	copy running-config tftp:
+	# mkdir /var/tftpboot
+	# fai il touch in /var/tftpboot/running-config && chmod 666 /var/tftpboot/running-config
+	
+
+# per entrare in modalità configurazione:
+configure terminal
+	
+
+# in modalità configurazione(config):
+clock timezone GMT +1			# -> setta timezone
+hostname gruppo2 			# -> crea nuovo hostname
+enable password newpassword 		# -> setta nuova password
+service password-encryption		# -> cripta password
+	# per settare l'indirizzo ip nell'interfaccia management	
+	interface vlan 1 
+	(config-if) ip address 172.16.1.2 255.255.255.0 
+	(config-if) no shut	
+exit 					# -> esce, torna in modalità login(enable)
+
+--------------------------------------------------------------------------------
+
+server tftp -> xinetd
+
+in /etc/xinetd.d/tftp	impostare "disable=no"
+
+
+# Copiare config in modo permanente:
+enable
+copy tftp: nvram:/startup-config
+ #selezionare running-config come source	 

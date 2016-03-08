@@ -1,0 +1,380 @@
+%
+% relazione_es4.tex
+%
+% Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+%                    dannylessio (Danny Lessio)
+%
+% This file is part of networks-lab.
+%
+% networks-lab is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% networks-lab is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+%
+
+
+\makeatletter
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
+
+\documentclass[9pt, a4paper, oneside]{article}
+\usepackage[a4paper]{geometry}
+\usepackage{setspace} % packets
+\usepackage{listings}
+\singlespacing % interlinea singolo
+\title{Relazione esercitazione 5 Laboratorio di reti\newline
+Configurazione di uno switch CISCO}
+\author{Franco Masotti \and Danny Lessio}
+\date{May 3, 2015}
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+    \footnotetext{networks-lab  Copyright (C) 2016  frnmst (Franco Masotti), 
+dannylessio (Danny Lessio).  This document comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it 
+under certain conditions; see LICENSE file for details.}
+	\part{Configurazione dello switch}
+		\section{Consegna}
+			\par
+				L'obbiettivo di questa esercitazione \'e quello 
+				di collegarsi ad uno switch CISCO e di 
+				configurarlo in modo da creare delle 
+				\texttt{VLAN}. Inoltre \'e richiesto di 
+				collegare insieme pi\'u switch definendo 
+				alcune delle porte come trunk.
+		\section{Collegamento allo switch}
+			\par
+				Per collegarsi inizialmente allo switch \'e 
+				necessario uno speciale adattatore dotato di 
+				attacco seriale da attaccare alla porta 
+				console presente nella parte posteriore 
+				dell'apparato di rete. Poich\'e i computer  
+				recenti non hanno un attacco seriale, \'e 
+				necessario di un secondo adattatore da seriale 
+				a USB.
+			\par
+				Una volta collegati tutti i cavi bisogna 
+				individuare la periferica. Questo lo si pu\'o 
+				fare con il classico comando \texttt{dmesg}. 
+				Nel nostro caso la periferica \'e 
+				\texttt{ttyUSB0}.
+			\par
+				A questo punto bisogna installare un programma 
+				per mettere in comunicazione il computer con 
+				lo switch. Noi abbiamo usato 
+				\texttt{minicom}
+				\footnote{https://alioth.debian.org/projects/minicom}
+				, che \'e presente nei repository 
+				ufficiali
+				\footnote{https://www.archlinux.org/packages/?name=minicom}
+				. Iniziamo la configurazione con 
+				il comando
+				\texttt{sudo minicom -s}\footnote{\'E
+				necessario essere utente root per aprire la
+				periferica \texttt{ttyUSB0}.}, dove \texttt{-s} 
+				significa \emph{setup}. A questo punto 
+				impostiamo i valori come indicato dalla 
+				guida\footnote{https://help.ubuntu.com/
+				community/CiscoConsole}. Se il collegamento va 
+				a buon fine ci troviamo il terminale con la 
+				scritta \texttt{Switch> }. A questo punto 
+				inizia la configurazione vera e propria.
+		\section{Configurazione di base}
+			\par
+				Prima di poter configurare qualunque cosa \'e 
+				necessario entrare in modalit\'a 
+				amministratore. Per farlo basta eseguire il 
+				comando \texttt{enable}. A questo punto il 
+				\emph{prompt} cambia e viene visualizzato 
+				\texttt{Switch\# }\footnote{Simile a quando si 
+				diventa utente \texttt{root} con \texttt{su} in 
+				un terminale.}.
+			\par
+				Impostiamo la data e l'ora corente con 
+				\texttt{clock set hh:mm:ss dd mmm\footnote{Il 
+				mese pu\'o andare col nome completo (es: 
+				\texttt{April}) oppure abbreviato (es: 
+				\texttt{Apr})} yyyy}.
+			\par
+				In questa modalit\'a possiamo anche vedere 
+				tutta la configurazione corrente con 
+				\texttt{show running-config}.
+			\par
+				Adesso si entra in una modalit\'a ancora pi\'u 
+				particolare con il comando \texttt{configure 
+				terminal} dove abbiamo configurato i parametri 
+				fondamentali. Il \emph{prompt} cambia 
+				ancora, cos\'i: \texttt{Switch(config)\# }. 
+				Qui si imposta il fuso orario con 
+				\texttt{clock timezone GMT +1}. A questo punto 
+				abbiamo cambiato l'hostname: \texttt{hostname 
+				\emph{hostname}}\footnote{Nel nostro caso 
+				\texttt{hostname gruppo2}.}, e cambiamo la 
+				password di amministrazione con \texttt{enable 
+				password \emph{newpassword}}\footnote{Nel 
+				nostro caso \texttt{enable password labreti}. 
+				Le nostre password, da questo punto saranno 
+				tutte \texttt{labreti}.}. Abilitiamo ora il 
+				servizio di cifratura delle password con 
+				\texttt{service password-encryption}. 
+				Infine controlliamo se la password risulta 
+				criptata con \texttt{show running-config}.
+			\par
+				Se si vuole accedere allo switch da una 
+				postazione remota bisogna abilitare 
+				l'amministrazione. Questa si trova di default 
+				nella VLAN 1. Rimaniamo nella modilit\'a 
+				\texttt{configure terminal} e diamo in 
+				sequenza i seguenti comandi:
+				\begin{itemize}
+					\item
+						\texttt{interface 
+						vlan1}\footnote{Seleziona 
+						l'interfaccia.}
+					\item
+						\texttt{ip address 
+						\emph{switch-address} 
+						\emph{switch-subnet-mask}}
+						\footnote{Nel nostro caso 
+						\texttt{ip address 
+						192.168.2.100 255.255.255.0}. 
+						Ovviamente \'e necessario 
+						cambiare la sottorete 
+						dell'interfaccia cablata del 
+						computer in modo che sia la 
+						stessa di quella dello 
+						switch.}
+					\item
+						\texttt{no 
+						shut}\footnote{Abilita 
+						l'interfaccia di rete.}
+				\end{itemize}
+				Collegiamo i due apparecchi con un cavo 
+				ethernet e testiamo il tutto dal computer con 
+				un \texttt{ping 
+				\emph{switch-address}}\footnote{Nella nostra 
+				configurazione con: \texttt{ping 
+				192.168.2.100}}. Anche lo switch ha il 
+				comando \texttt{ping}.
+			\par
+				Dopo aver configurato la rete si pu\'o 
+				abilitare l'amministrazione con telnet (quindi 
+				non c'\'e pi\'u bisogno del cavo seriale) per 
+				controllare lo switch da una postazione remota. 
+				Nonostrate telnet sia abilitato di default 
+				questo non funzioner\'a correttamente finche 
+				non impostiamo una password. \'E sufficiente 
+				eseguire questi tre comandi, dopo essere 
+				entrati nella modailt\'a \texttt{configure 
+				terminal}:
+				\begin{itemize}
+					\item
+						\texttt{line vty 0 
+						4}\footnote{Abilita il login 
+						fino a 5 sessioni 
+						consecutive.}
+					\item
+						\texttt{login}
+					\item
+						\texttt{password 
+						\emph{telnet-password}}
+						\footnote{Setta la password 
+						per il telnet. Nel nostro caso 
+						\'e \texttt{labreti}}
+				\end{itemize}
+ 		\section{Salvataggio e ripristino della configurazione}
+			\par
+				Dopo aver configurato la rete siamo pronti per 
+				un salvataggio preliminare delle impostazioni. 
+				Per salvare la configurazione dello switch 
+				abbiamo usato un server tftp chiamato 
+				\texttt{xinetd}\footnote{\texttt{xinetd} = 
+				\emph{the extended Internet services daemon}.} 
+				presente nei repository ufficiali
+				\footnote{https://www.archlinux.org/packages/?name=xinetd}
+				. Qui \'e sufficiente cambiare una 
+				riga\footnote{Questo verr\'a 
+				spiegato nella parte dei listati} nel file di 
+				configurazione ed avviare il 
+				servizio\footnote{Con \texttt{systemd}: 
+				\texttt{sudo systemctl start xinetd}.}. Creiamo 
+				la cartella di destinazione del 
+				server\footnote{\texttt{mkdir /var/tftpboot 
+				\&\& chmod 666 /var/tftpboot} in modo che tutti 
+				gli utenti abbiano permessi di lettura e 
+				scrittura.} e creiamo anche il file di 
+				destinazione\footnote{\texttt{touch 
+				/var/tftpboot/running-config \&\& chmod 666 
+				/var/tftpboot/running-config}} (che deve 
+				esistere prima dell'invio del file stesso).
+			\par
+				Torniamo sullo switch in modalit\'a 
+				\texttt{enable} e copiamo le impostazioni 
+				cos\'i: \texttt{copy running-config tftp:} 
+				avendo cura di specificare l'indirizzo del PC e 
+				il nome del file sorgente e 
+				destinazione\footnote{Sempre 
+				\texttt{running-config}.}. Se non ci sono 
+				errori viene indicato il numero di byte 
+				copiati.
+			\par
+				Per verificare il salvataggio \'e sufficiente 
+				fare \texttt{cat /var/tftpboot/running-config} 
+				e confrontarlo con l'output di \texttt{show 
+				running-config} presente nello switch.
+			\par
+				\'E anche possibile ripristinare e rendere 
+				persistente le impostazioni sullo switch. Per 
+				farlo basta copiare \texttt{running-config} nel 
+				file \texttt{startup-config} all'interno 
+				dell'\emph{nvram} dello switch\footnote{
+				\texttt{copy tftp: nvram:/startup-config}} (che 
+				\'e la memoria non volatile. Il file 
+				\texttt{startup-config} infatti viene caricato 
+				all'avvio.
+		\section{VLAN}
+			\par
+				La seconda parte dell'esercitazione consiste 
+				nella creazione di alcune \texttt{VLAN} 
+				(Virtual LAN) in modo da collegarsi anche 
+				agli switch degli altri gruppi. Usando le VLAN 
+				infatti \'e possibile creare molte reti 
+				virtualmente separate ma fisicamente collegate. 
+				In questo modo si risparmia il numero dei 
+				cablaggi e degli apparati di rete.
+			\par
+				Per identificare univocamente le VLAN vengono 
+				usati numeri interi da 1 a \emph{vlan-max}. 
+				Inoltre ad ogni VLAN pu\'o essere associato un 
+				nome sotto forma di stringa. Quindi, per prima 
+				cosa, abbiamo creato la VLAN 2 di nome 
+				\texttt{vlan2}, appunto. Entriamo nella 
+				modalit\'a \texttt{enable} poi:
+				\begin{itemize}
+					\item
+						\texttt{vlan 
+						database}\footnote{Entra nella 
+						modalit\'a di configurazione 
+						delle VLAN.}
+					\item
+						\texttt{vlan 2 name 
+						vlan2}\footnote{Assegna il nome 
+						\texttt{vlan2} alla VLAN 2.}
+					\item
+						\texttt{exit}\footnote{Per 
+						applicare la configurazione e 
+						uscire.}
+				\end{itemize}
+				Per controllare che la configurazione sia 
+				andata a buon fine usiamo il comando 
+				\texttt{show vlan}, il quale ci mostrer\'a lo 
+				stato di tutte le VLAN.
+			\par
+				Lo switch in dotazione ha 12 porte, quindi 
+				possiamo assegnare almeno due porte per ognuna 
+				delle quattro VLAN. Ora noteremo che tutte le 
+				interfaccie fisiche sono assegate alla VLAN 1: 
+				dobbiamo assegnarne 3 alla VLAN 2. Entriamo 
+				prima nella modalit\'a \texttt{configure 
+				terminal} poi:
+				\begin{itemize}
+					\item
+						\texttt{interface 
+						Fa0/2}\footnote{Entra nella 
+						configurazione 
+						dell'interfaccia 2}
+					\item
+						\texttt{switchport access 
+						vlan 2}\footnote{Assegna 
+						l'interfaccia 2 alla VLAN 2}
+					\item
+						\texttt{exit}
+				\end{itemize}
+				Ripetiamo queste operazioni anche per le porte 
+				3 e 4.
+				Ora rendiamo la VLAN 2 amministrativa nello 
+				stesso modo dell VLAN 1. A questo punto 
+				l'interfaccia amministrativa della VLAN 1 si 
+				disattiva automaticamente.
+			\par
+				Con lo stesso procedimento per creare la VLAN 
+				2 (esclusa la parte di amministrazione) abbiamo 
+				creato anche le VLAN 11 e 3 (Con due porte 
+				assegnate ciascuna).
+			\par
+				Per collegarci fisicamente agli switch degli 
+				altri gruppi abbiamo usato dei cavi di tipo 
+				crossover\footnote{https://en.wikipedia.org/wiki/Ethernet\_crossover\_cable} 
+				poich\'e sono apparati dello stesso tipo, 
+				quindi \'e necessario invertire ricezione e 
+				trasmissione.
+		\section{Porte trunk}
+			\par
+				Per poter mettere in comunicazione stesse VLAN 
+				che si trovano su switch diversi i pacchetti 
+				vengono incapsulati in modo che abbiano 
+				un'identificativo con il numero della VLAN. 
+				Tutto questo si ottiene assegnando una/pi\'u 
+				porta/e come trunk. 
+			\par
+				Trovandoci fisicamente adiacenti sia al gruppo 
+				1 sia al gruppo 3, abbiamo configurato le porte 
+				1 e 12 come porte trunk. Per impostare una 
+				porta trunk entriamo nella modalit\'a 
+				\texttt{configure terminal}, poi:
+				\begin{itemize}
+					\item
+						\texttt{interface Fa0/1}
+					\item
+						\texttt{switchport mode trunk}
+						\footnote{Abilita linterfaccia 
+						in modalit\'a trunk.}
+					\item
+						\texttt{switchport trunk 
+						allowed vlan add 2,3,11}
+						\footnote{Aggiunge le 
+						VLAN 2,3,11 alla porta trunk, 
+						dove la VLAN 11 \'e quella del 
+						gruppo 1 per evitare conflitti 
+						con la VLAN 1 stessa.}
+				\end{itemize}
+				Ripetiamo lo stesso procedimento per la porta 
+				12 (cio\'e con \texttt{Fa0/12}).
+		\section{Prove}
+			\par
+				Per testare le nostre cofigurazioni abbiamo 
+				settato gli indirizzi delle interfaccie di rete 
+				dei computer di tutti i gruppi nella sottorete 
+				\texttt{192.168.1.0/24} e con il comando 
+				\texttt{ping} abbiamo verificato di poter 
+				raggiungere tutti i computer della sottorete.
+		\newpage	
+	\part{Listati}					
+		 \section{\texttt{startup-config}}
+			\par
+				\texttt{startup-config}
+			\par
+				File di configurazione principale dello switch 
+				da mettere in \texttt{nvram:/}.
+			\texttt{\lstinputlisting[breaklines]{../source/running-config}}
+			\newpage
+		 \section{\texttt{tftp}}
+			\par
+				\texttt{/etc/xinet.d/tftp}
+			\par
+				File di configurazione del server tftp. Abbiamo 
+				semplicemente cambiato l'ultima riga da 
+				\texttt{disable = yes} a \texttt{disable = no}, 
+				in modo da abilitare il servizio.
+			\texttt{\lstinputlisting[breaklines]{../source/tftp}}
+\end{document}
+				
