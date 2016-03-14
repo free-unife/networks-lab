@@ -4,11 +4,15 @@ LaTeX and source code files related to "Laboratorio di reti" course in UNIFE
 
 ## Status of art
 All the material in this repository is "as-is", i.e: it has not yet been 
-reprocessed to be clear and usable. Since there are quite a lot of files, and 
-the fact that this is a repository with the least priority among all, the 
-processing may take a long time.
+reprocessed to be clear (it is mosly in italian language) and usable (some code 
+may not be working and it is sometimes messy). We did our best anyway (and it 
+was quite successful), since we worked with Arch Linux (and derivative 
+distibutions) while it was advised to use CentOS, because some tools were 
+already present and configured (see the `bind-sdb` case as an example).
 
-## Wiki contributions
+Enjoy :)
+
+## Arch Linux wiki contributions
 The following is a list of Arch Linux wiki pages contributed because of this 
 course:
 - [Dovecot](https://wiki.archlinux.org/index.php?title=Dovecot&diff=prev&oldid=370632)
@@ -32,7 +36,7 @@ $ gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH -sOutp
 
 # License
 Source code and documentation sometimes overlap and for this reason they are 
-both released under the::
+both released under the:
 
 ![https://www.gnu.org/graphics/gplv3-127x51.png](https://www.gnu.org/graphics/gplv3-127x51.png)
 
