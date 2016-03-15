@@ -1,0 +1,71 @@
+#
+# directives.txt
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+10 deny tcp host 192.168.2.1 any eq telnet
+20 permit tcp 192.168.2.0 0.0.0.255 any eq telnet
+
+
+
+last part:
+enable
+show controllers serial 0/0
+
+
+s1 s0 sono le intefacce seriali che guardano all'esterni
+s1 -> s0 
+
+ogn
+
+
+uno deve pingare i vicini
+
+DTE -> MASCHIO
+DCE -> FEMMINA
+
+1) IN UNA DELLE DUE DEVI IMPOSTARE IL CLOCK 56000
+
+Scoprire se è il maschio o se è la femmina.
+
+----------------------
+
+Noi abbiamo 2 DTE, è impossibile impostarne il clock e la banda.
+
+
+
+1° PARTE --------------------------------------------------:
+10 permit tcp 192.168.2.0 0.0.0.255 any eq telnet
+20 deny tcp host 192.168.2.1 any eq telnet
+
+
+2° PARTE --------------------------------------------------:
+
+10 deny tcp host 192.168.2.1 any eq telnet
+20 permit tcp 192.168.2.0 0.0.0.255 any eq telnet
+
+
+
+Guida:
+http://www.freeccnaworkbook.com/workbooks/ccna/configuring-the-vty-lines-access-control-list
+
+Noi abbiamo due DTE, non necessitiamo di configurare il clockrate e la banda.
+

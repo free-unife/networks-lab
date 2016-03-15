@@ -1,0 +1,141 @@
+#
+# commands.txt
+#
+# Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+#                    dannylessio (Danny Lessio)
+#
+# This file is part of networks-lab.
+#
+# networks-lab is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# networks-lab is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+# Bidsogna collegari con il cavo del laboratorio per acedere ai router 
+# dell'altra stanza.
+# Collegamento al ?gateway? che a sua volta si collega in seriale al router.
+telnet 192.168.0.100 7002
+Username labreti2
+Password labreti2
+
+# Dopo fatto la stessa config come quella dello swicth, esclusa la parte delle 
+# vlan:
+
+interface FastEthernet0/0
+ip address 192.168.2.100 255.255.255.0
+no shut
+
+# Fare trafila telnet (vedi relazione):
+# vty
+
+# copiare running-config in startup-config
+
+# Salviamo la flash sul computer:
+# copiare  c2600-adventerprisek9-mz.124-16b.bin sul pc
+copy c2600-adventerprisek9-mz.124-16b.bin tftp:
+oppure 
+copy flash tftp:
+mettendo flash come destinazione
+e c2600... come source
+
+# Cambiamo il valore del registro in modo che al prossimo avvio si avvii 
+# nella sua modalita' (una specie di recovery mode ).
+enable
+configure terminal
+# Mettendo il registro al valore 0x0 il router ignorera' la configurazione 
+# salvata in startup-config. In questo modo e' possibile ripristinare la 
+# password.
+config-register 0x0
+end
+
+# Torniamo alla connessione seriale, poi:
+
+enable
+reload
+
+save conf [y]: y
+
+# Impostiamo il registro col nuovo valore (forse per ignorare la password dello 
+startup-config che andremo a cariare dal pc al router).
+confreg 0x2142
+# ?Riavvio?
+reset
+
+
+# Recovery della config e impostiamo la nuova password.
+copy startup-config running-config
+configure terminal
+enable password labreti
+
+# Ripristina il valore del registro.
+confreg 0x2102
+
+# Ctrl dati con show ver.
+show ver
+
+#Cancelliamo la flash dal router.
+cd flash:/
+delete c2600..
+
+# Ri-abilitiamo l'interfaccia di rete che nel fratttempo si e' disabilitata.
+configure terminal
+interface FastEthernet0/0
+noshut
+
+exit
+
+# Reboot router.
+reload
+
+# rientra seriale
+# Adesso non si cariachera' piu' l'os perche' l'abbiamo cancellato. Dobbiamo 
+# ripsristinarlo.
+# Diamo i parametri giusti da usare poi con tftpdnld.
+# Con set possiamo vedere preliminarmante i valori.
+IP_ADDRESS=192.168.0.101  # del router
+IP_SUBNET_MASK=255.25.255.0
+DEFAULT_GATEWAY=<addr a caso>
+TFTP_SERVER=<addr pc>
+TFTP_FILE=c2600....bin
+
+# Rispodere si dopo aver dato il seguente comando:
+tftpdnld rispondere yes
+
+# ?forse per scrivere (vedi comando sync unix)?.
+sync
+# Boot finale.
+boot
+# Cancella la configurazione per avere il router pulito per i prossimi gruppi.
+delete nvram:/startup-config
+# Restart finale.
+reload
+
+Permit pc and deny ALL
+
+R1>enable
+R1#configure terminal
+Enter configuration commands, one per line.  End with CNTL/Z.
+R1(config)#ip access-list extended VTY_ACCESS
+R1(config-ext-nacl)#
+
+R1(config-ext-nacl)#10 permit tcp host 192.168.2.1 any eq telnet
+
+R1(config-ext-nacl)#line vty 0 4
+R1(config-line)#access-class VTY_ACCESS in
+R1(config-line)#end
+R1#
+
+R1#show access-list
+
+
+Permit all deny PC

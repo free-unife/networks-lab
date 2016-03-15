@@ -1,0 +1,110 @@
+!
+! startup-config
+!
+! Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+!                    dannylessio (Danny Lessio)
+!
+! This file is part of networks-lab.
+!
+! networks-lab is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! networks-lab is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+!
+!
+!
+! Last configuration change at 11:28:29 GMT Mon May 4 2015
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname gruppo2
+!
+boot-start-marker
+boot-end-marker
+!
+enable password 7 082D4D4C1B1C111E
+!
+no aaa new-model
+clock timezone GMT 1
+no network-clock-participate slot 1 
+no network-clock-participate wic 0 
+ip cef
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+!
+!
+!
+!
+interface FastEthernet0/0
+ ip address 192.168.2.100 255.255.255.0
+ duplex auto
+ speed auto
+!
+interface Serial0/0
+ no ip address
+ shutdown
+!
+interface Serial0/1
+ no ip address
+ shutdown
+!
+!
+!
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+line aux 0
+line vty 0 4
+ password 7 020A055919031B28
+ login
+!
+!
+end
