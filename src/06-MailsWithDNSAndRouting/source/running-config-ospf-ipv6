@@ -1,0 +1,131 @@
+!
+! running-config
+!
+! Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+!                    dannylessio (Danny Lessio)
+!
+! This file is part of networks-lab.
+!
+! networks-lab is free software: you can redistribute it and/or modify
+! it under the terms of the GNU General Public License as published by
+! the Free Software Foundation, either version 3 of the License, or
+! (at your option) any later version.
+!
+! networks-lab is distributed in the hope that it will be useful,
+! but WITHOUT ANY WARRANTY; without even the implied warranty of
+! MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+! GNU General Public License for more details.
+!
+! You should have received a copy of the GNU General Public License
+! along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+!
+!
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+!
+hostname gruppo2
+!
+boot-start-marker
+boot-end-marker
+!
+enable password 7 082D4D4C1B1C111E
+!
+no aaa new-model
+clock timezone GMT 1
+no network-clock-participate slot 1 
+no network-clock-participate wic 0 
+ip cef
+!
+!
+!
+!
+!
+ipv6 unicast-routing
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+!
+!
+!
+!
+interface FastEthernet0/0
+ ip address 192.168.2.1 255.255.255.0
+ duplex auto
+ speed auto
+ ipv6 address 2002::1/64
+ ipv6 enable
+ ipv6 ospf 23 area 12
+!
+interface Serial0/0
+ ip address 172.2.0.5 255.255.255.252
+ ipv6 address 1002::5/127
+ ipv6 enable
+ ipv6 ospf 23 area 12
+!
+interface Serial0/1
+ ip address 172.1.0.1 255.255.255.252
+ ipv6 address 1001::1/127
+ ipv6 enable
+ ipv6 ospf 23 area 12
+ clock rate 56000
+!
+router ospf 23
+ log-adjacency-changes
+ network 172.1.0.0 0.0.0.3 area 12
+ network 172.2.0.4 0.0.0.3 area 12
+ network 192.168.2.0 0.0.0.255 area 12
+!
+!
+!
+no ip http server
+no ip http secure-server
+!
+ip access-list extended VTY_ACCESS
+ deny   tcp host 192.168.2.1 any eq telnet
+ permit tcp 192.168.2.0 0.0.0.255 any eq telnet
+!
+ipv6 router ospf 23
+ log-adjacency-changes
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+line aux 0
+line vty 0 4
+ access-class VTY_ACCESS in
+ password 7 03085A09140A3545
+ login
+!
+!
+end

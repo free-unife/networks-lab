@@ -1,0 +1,98 @@
+;;
+;; root.hint
+;;
+;; Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+;;                    dannylessio (Danny Lessio)
+;;
+;; This file is part of networks-lab.
+;;
+;; networks-lab is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; networks-lab is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+;;
+
+
+; <<>> DiG 9.9.4-P2-RedHat-9.9.4-12.P2 <<>> +norec NS . @a.root-servers.net
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 26229
+;; flags: qr aa; QUERY: 1, ANSWER: 13, AUTHORITY: 0, ADDITIONAL: 24
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1472
+;; QUESTION SECTION:
+;.				IN	NS
+
+;; ANSWER SECTION:
+.			518400	IN	NS	a.root-servers.net.
+.			518400	IN	NS	b.root-servers.net.
+.			518400	IN	NS	c.root-servers.net.
+.			518400	IN	NS	d.root-servers.net.
+.			518400	IN	NS	e.root-servers.net.
+.			518400	IN	NS	f.root-servers.net.
+.			518400	IN	NS	g.root-servers.net.
+.			518400	IN	NS	h.root-servers.net.
+.			518400	IN	NS	i.root-servers.net.
+.			518400	IN	NS	j.root-servers.net.
+.			518400	IN	NS	k.root-servers.net.
+.			518400	IN	NS	l.root-servers.net.
+.			518400	IN	NS	m.root-servers.net.
+.			518400	IN	NS	admin.gruppo9.labreti.it.
+.			518400	IN	NS	ns.gruppo1.labreti.it.
+.			518400	IN	NS	ns.gruppo3.labreti.it.
+.			518400	IN	NS	ns.gruppo4.labreti.it.
+.			518400	IN	NS	ns.gruppo5.labreti.it.
+.	                518400	IN	NS	ns1.gruppo6.labreti.it.
+.	                518400	IN	NS	ns1.gruppo7.labreti.it.
+.	                518400	IN	NS	ns.gruppo8.labreti.it.
+
+
+
+
+;; ADDITIONAL SECTION:
+
+ns.gruppo1.labreti.it.	518400	IN	A	192.168.1.10
+ns.gruppo3.labreti.it.	518400	IN	A	192.168.3.10
+ns.gruppo4.labreti.it.	518400	IN	A	192.168.4.10
+ns.gruppo5.labreti.it.	518400	IN	A	192.168.5.10
+ns1.gruppo6.labreti.it.	518400	IN	A	192.168.6.10
+ns1.gruppo7.labreti.it.	518400	IN	A	192.168.7.10
+ns.gruppo8.labreti.it.	518400	IN	A	192.168.8.10
+admin.gruppo9.labreti.it.	518400	IN	A	192.168.9.10
+a.root-servers.net.	518400	IN	A	198.41.0.4
+b.root-servers.net.	518400	IN	A	192.228.79.201
+c.root-servers.net.	518400	IN	A	192.33.4.12
+d.root-servers.net.	518400	IN	A	199.7.91.13
+e.root-servers.net.	518400	IN	A	192.203.230.10
+f.root-servers.net.	518400	IN	A	192.5.5.241
+g.root-servers.net.	518400	IN	A	192.112.36.4
+h.root-servers.net.	518400	IN	A	128.63.2.53
+i.root-servers.net.	518400	IN	A	192.36.148.17
+j.root-servers.net.	518400	IN	A	192.58.128.30
+k.root-servers.net.	518400	IN	A	193.0.14.129
+l.root-servers.net.	518400	IN	A	199.7.83.42
+m.root-servers.net.	518400	IN	A	202.12.27.33
+a.root-servers.net.	518400	IN	AAAA	2001:503:ba3e::2:30
+c.root-servers.net.	518400	IN	AAAA	2001:500:2::c
+d.root-servers.net.	518400	IN	AAAA	2001:500:2d::d
+f.root-servers.net.	518400	IN	AAAA	2001:500:2f::f
+h.root-servers.net.	518400	IN	AAAA	2001:500:1::803f:235
+i.root-servers.net.	518400	IN	AAAA	2001:7fe::53
+j.root-servers.net.	518400	IN	AAAA	2001:503:c27::2:30
+k.root-servers.net.	518400	IN	AAAA	2001:7fd::1
+l.root-servers.net.	518400	IN	AAAA	2001:500:3::42
+m.root-servers.net.	518400	IN	AAAA	2001:dc3::35
+
+;; Query time: 58 msec
+;; SERVER: 198.41.0.4#53(198.41.0.4)
+;; WHEN: Wed Apr 23 14:52:37 CEST 2014
+;; MSG SIZE  rcvd: 727
