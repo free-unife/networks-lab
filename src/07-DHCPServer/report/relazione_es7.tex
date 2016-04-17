@@ -1,0 +1,211 @@
+%
+% relazione_es7.tex
+%
+% Copyright (C) 2016 frnmst (Franco Masotti) <franco.masotti@student.unife.it>
+%                    dannylessio (Danny Lessio)
+%
+% This file is part of networks-lab.
+%
+% networks-lab is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% networks-lab is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with networks-lab.  If not, see <http://www.gnu.org/licenses/>.
+%
+
+
+\makeatletter
+\def\blfootnote{\xdef\@thefnmark{}\@footnotetext}
+\makeatother
+
+\documentclass[9pt, a4paper, oneside]{article}
+\usepackage[a4paper]{geometry}
+\usepackage{setspace} % packets
+\usepackage{listings}
+\singlespacing % interlinea singolo
+\title{Relazione esercitazione 8 Laboratorio di reti\newline
+Server DHCP}
+\author{Franco Masotti \and Danny Lessio}
+\date{May 31, 2015}
+\begin{document}
+	\maketitle
+	\tableofcontents
+	\newpage
+    \footnotetext{networks-lab  Copyright (C) 2016  frnmst (Franco Masotti),
+dannylessio (Danny Lessio).  This document comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions; see LICENSE file for details.}
+	\part{Consegna}
+			\par
+				L'obbiettivo di questa esercitazione \'e quello 
+				di installare e configurare un server 
+				\texttt{DHCP}\footnote{Dynamic Host 
+				Configuration Protocol.} con 
+				i protocolli IPv4 ed IPv6. Bisogna abilitare il 
+				\texttt{MAC}\footnote{Media Access Control.} 
+				filterting in modo da permettere l'ottenimento 
+				di un indirizzo IP solo a macchine 
+				fidate\footnote{Questo vale esclusivamente per 
+				IPv4.}.
+		\newpage
+	\part{Configurazioni del server DHCP}
+		\section{Installazione del pacchetto}
+			\par
+				Il pacchetto che contiene il server DHCP 
+				(sia v4 sia v6) \'e 
+				\texttt{dhcp}
+				\footnote{https://www.archlinux.org/packages/extra/x86\_64/dhcp/}
+				. 
+				Per IPv6 \'e necessario installare anche 
+				\texttt{radvd}
+				\footnote{https://www.archlinux.org/packages/extra/x86\_64/radvd/}
+				.
+		\section{Impostazione della rete}
+			\par
+				Prima di avviare i server \'e necessario 
+				impostare correttamente gli indirizzi del 
+				server. Abbiamo usato gli stessi indirizzi 
+				delle precedenti esercitazioni quindi:
+				\begin{itemize}
+					\item
+						Per IPv4: 
+						\texttt{192.168.2.10/24}
+					\item
+						Per IPv6: \texttt{2002::a/64}
+				\end{itemize}
+			\par
+				Per impostare gli indirizzi abbiamo usato il 
+				network manager che consente di velocizzare le 
+				operazioni. In questo modo le impostazioni 
+				rimangono salvate anche dopo il riavvio senza 
+				dover editare file.
+		\section{Configurazione IPv4}
+			\par
+				Abbiamo creato una 
+				subnet\footnote{\texttt{192.168.2.0}}
+				definendo anche la maschera di 
+				rete\footnote{\texttt{255.255.255.0}}.
+				All'interno della subnet sono prsenti 
+				informazioni sui server DNS, sul dominio, sui 
+				router, ecc. Una impostazione fondamentale \'e 
+				quella del range di indirizzi che gli host 
+				possono ottenenere. Nel nostro caso vanno da 
+				\texttt{192.168.2.11} a \texttt{192.168.2.254}.
+			\par
+				Ogni scheda di rete ha un indirizzo MAC 
+				univoco. Si pu\'o quindi definire il MAC 
+				filtering per host. Con la direttiva 
+				\texttt{deny unknown-clients} 
+				non \'e possibile l'ottenimento delle 
+				informazioni della rete se l'host che le 
+				richiede non \'e presente in un' opzione di 
+				tipo \texttt{host} nel file del server DHCP. 
+				Ci\'o viene fatto per evitare che computer
+				sconosciuti non possano utilizzare la rete. 
+				Questo sistema ha il difetto che se un 
+				attaccante riesce ad ottenere un indirizzo MAC 
+				valido allora pu\'o assegnare tale indirizzo 
+				alla sua scheda di rete e quindi aggirare 
+				questo sistema di sicurezza.\newpage
+		\section{Configurazione IPv6}
+			\par
+				IPv6 richiede un componente in pi\'u rispetto 
+				ad IPv4: il Router ADVertisment Daemon detto 
+				\texttt{RADVD}. 
+			\par
+				Gli host mandano dei messaggi di tipo 
+				\emph{router solicitation} per scoprire 	
+				quali sono i router nella rete. RADVD risponde 
+				con dei messaggi \emph{router adverisement}. 
+				Questi ultimi contengono il prefisso 
+				di rete oltre che l'indirizzo del router che 
+				li ha mandati.
+			\par
+				Per implementare queste operazioni (impostare 
+				una connessione di tipo stateful) dobbiamo 
+				settare il file \texttt{/etc/radvd.conf}. 
+				Abbiamo impostato questi parametri:
+				\begin{verbatim}
+AdvSendAdvert on;
+AdvManagedFlag on;
+AdvOtherConfigFlag on;
+				\end{verbatim}
+				Il primo parametro \texttt{AdvSendAdvert} 
+				permette il RA (Router Advertisement).
+				Gli altri due parametri 
+				\texttt{AdvManagedFlag} e 
+				\texttt{AdvOtherConfigFlag} permettono 
+				l'implementazione del protocollo stateful. 				
+		\section{Test}
+			\par
+				Per testare le configurazioni abbiamo usato due 
+				computer (server e client) e abbiamo usato un 
+				normale cavo ethernet per la connessione.
+			\par
+				A questo punto abbiamo testato DHCPv4 con il 
+				seguente comando:
+				\begin{verbatim}
+sudo dhcpd
+				\end{verbatim}
+			\par
+				Per lanciare DHCPv6 occorre quindi avviare 
+				prima radvd:
+				\begin{verbatim}
+systemctl start radvd
+				\end{verbatim}
+				Successivamente occorre lanciare il comando 
+				per far partire il server DHCP:
+				\begin{verbatim}
+/usr/bin/dhcpd -6 -cf /etc/dhcpd6.conf -lf /var/lib/dhcp/dhcpd6.leases enp4s0
+				\end{verbatim}
+				Il flag \texttt{-6} implica che dhcpd viene 
+				avviato con il protocollo IPv6. Il flag 
+				\texttt{-cf} impone \texttt{/etc/dhcpd6.conf} 
+				come file di configurazione. Il flag 
+				\texttt{-lf} imposta 
+				\texttt{/var/lib/dhcp/dhcpd6.leases} come lease 
+				file. L'ultimo parametro invece specifica 
+				l'interfaccia di rete sulla quale il server deve 
+				girare.
+		\section{Considerazioni finali}
+			\par
+				Abbiamo verificato l'ottenimento di un 
+				indirizzo all'interno del range per entrambi i 
+				protocolli. Cambiando l'indirizzo MAC nel file 
+				\texttt{dhcpd.conf} \'e stato verificato che il 
+				client non \'e pi\'u stato in grado di ottenere 
+				un'indirizzo IPv4.
+			\par
+				Per quanto riguarda IPv6 abbiamo 
+				verificato l'ottenimento di indirizzi 
+				corretti solo con client Debian. Tuttavia su 
+				altri sistemi testati il prefisso rimane a 128 
+				bit contro i 64 che ci aspettavamo.
+		\newpage				
+	\part{Listati}
+		 \par
+		 \section{\texttt{dhcpd.conf} (IPv4)}
+			\par
+				\texttt{/etc/dhcpd.conf}
+			\par
+			\texttt{\lstinputlisting[breaklines]{../source/dhcpd.conf}}
+			\newpage
+		\section{\texttt{dhcpd6.conf} (IPv6)}
+			\par
+			 	\texttt{/etc/dhcpd6.conf}
+			\par
+			\texttt{\lstinputlisting[breaklines]{../source/dhcpd6.conf}}
+			\newpage
+		\section{\texttt{radvd.conf} (IPv6)}
+			\par
+			 	\texttt{/etc/radvd.conf}
+			\par
+			\texttt{\lstinputlisting[breaklines]{../source/radvd.conf}}
+\end{document}
